@@ -201,6 +201,7 @@ class SelectionHistory {
         const combining = event.shiftKey;
         this.makeSelection(historyItem, combining);
         if (combining) { this.updateHistory(); }
+        this.hidePreview();
       }, false);
 
       button.addEventListener("mouseenter", () => {
