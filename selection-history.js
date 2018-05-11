@@ -96,7 +96,7 @@ class Selectable {
 class SelectionHistory {
   constructor() {
     this.items = [];
-    addObs(this, "history", []);
+    addObs(this, "history", [[]]);
 
     this.el = document.createElement("div");
 
@@ -123,7 +123,7 @@ class SelectionHistory {
     Array.from(this.el.children).forEach(child => this.el.removeChild(child));
     this.history.forEach((historyItem, i) => {
       const button = document.createElement("button");
-      button.textContent = `${i} - ${historyItem.length}`;
+      button.textContent = `${this.history.length - i} - ${historyItem.length}`;
       button.addEventListener("click", () => this.makeSelection(historyItem), false);
       this.el.appendChild(button);
     });
