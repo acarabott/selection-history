@@ -6,6 +6,20 @@
     html, body {
       height: 100%;
       width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container,
+    .selectionHistory {
+      height: 90%;
+      margin: 2.5%;
+      border: 1px black solid;
+    }
+
+    .container {
+      position: relative;
+      width: 65%;
     }
 
     .selectable {
@@ -35,6 +49,23 @@
 
     .previewing .selectable.preview {
       border: 4px rgb(249, 182, 118) solid;
+    }
+
+    .selectionHistory {
+      box-sizing: border-box;
+      position: absolute;
+      width: 20%;
+      left: 75%;
+      top: 0;
+      overflow: scroll;
+    }
+
+    .history-item {
+      width: 100%;
+      height: 50px;
+      display: block;
+      border-bottom: 1px black solid;
+      box-sizing: border-box;
     }
   </style>
 </head>

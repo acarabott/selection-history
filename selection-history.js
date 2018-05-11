@@ -1,22 +1,3 @@
-const container = document.createElement("div");
-container.style.width = "100%";
-container.style.height = "100%";
-document.body.appendChild(container);
-
-function randomInt(min, max) {
-  return Math.floor(min + (Math.random() * (max - min)));
-}
-
-function addCSSClassProperty(obj, el, className) {
-  Object.defineProperty(obj, className, {
-    get: () => el.classList.contains(className),
-    set: bool => {
-      bool ? el.classList.add(className)
-           : el.classList.remove(className);
-    }
-  });
-}
-
 class Obs {
   static getObsName(name) { return `${name}Obs`; }
 
@@ -128,7 +109,7 @@ class SelectionHistory {
   }
 
   addToHistory(items) {
-    this.history.push(items);
+    this.history.unshift(items);
     this[Obs.getObsName("history")].notify();
   }
 
@@ -155,7 +136,9 @@ class SelectionHistory {
   render() {
     Array.from(this.el.children).forEach(child => this.el.removeChild(child));
     this.history.forEach((historyItem, i) => {
-      const button = document.createElement("button");
+      const button = document.createElement("div");
+      button.classList.add("history-item");
+      // const button = document.createElement("button");
       button.textContent = `${this.history.length - i} - ${historyItem.length}`;
       button.addEventListener("click", event => {
         const combining = event.shiftKey;
@@ -174,6 +157,14 @@ class SelectionHistory {
   }
 }
 
+function randomInt(min, max) {
+  return Math.floor(min + (Math.random() * (max - min)));
+}
+
+const container = document.createElement("div");
+container.classList.add("container");
+document.body.appendChild(container);
+
 const items = Array.from(Array(5)).map(() => {
   const x = `${randomInt(20, 80)}%`;
   const y = `${randomInt(20, 80)}%`;
@@ -190,4 +181,6 @@ items.forEach(item => {
   selectionHistory.addItem(item);
 });
 
-container.appendChild(selectionHistory.el);
+document.body.appendChild(selectionHistory.el);
+
+// TODO de-select history item
