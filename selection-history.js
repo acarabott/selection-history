@@ -95,12 +95,13 @@ class Selectable {
 
 class SelectionHistory {
   constructor() {
-    this.items = [];
-    addObs(this, "history", [[]]);
-
     this.el = document.createElement("div");
 
+    this.items = [];
+    addObs(this, "history", []);
+
     this[Obs.getObsName("history")].subscribe(() => this.render());
+    this.updateHistory();
   }
 
   get selected() { return this.items.filter(item => item.selected); }
