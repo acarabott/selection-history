@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Selection History</title>
+  <style>
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    .selectable {
+      border: 1px black solid;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .selectable.hover, .selectable.selected {
+      background: rgb(43, 156, 212);
+    }
+
+    .selectable.hover {
+      opacity: 0.25;
+    }
+
+    .selectable.selected {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+</body>
+<script src="selection-history.js"></script>
+</html>
