@@ -103,6 +103,10 @@ class SelectionHistory {
 
   get selection() { return this.items.filter(item => item.selected); }
 
+  set historyItemHeight(height) {
+    Array.from(this.el.children).forEach(el => el.style.height = `${height}px`);
+  }
+
   addItem(item) {
     item[Obs.getObsName("selected")].subscribe(() => this.updateHistory());
     this.items.push(item);
@@ -182,5 +186,16 @@ items.forEach(item => {
 });
 
 document.body.appendChild(selectionHistory.el);
+
+const onResize = () => {
+  const containerRect = container.getBoundingClientRect();
+  const heightToWidthRatio = containerRect.height / containerRect.width;
+
+  const historyRect = selectionHistory.el.getBoundingClientRect();
+  selectionHistory.historyItemHeight = historyRect.width * heightToWidthRatio;
+};
+
+window.addEventListener("resize", onResize, false);
+onResize();
 
 // TODO de-select history item
