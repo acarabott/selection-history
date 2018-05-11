@@ -101,6 +101,22 @@ class SelectionHistory {
     this[Obs.getObsName("history")].subscribe(() => this.render());
     this.addToHistory([]);
 
+    this.hoveredHistoryItem = [];
+    this.combining = false;
+    document.addEventListener("keydown", event => {
+      if (["ShiftLeft", "ShiftRight"].includes(event.code)) {
+        this.combining = true;
+        this.updatePreview();
+      }
+    }, false);
+
+    document.addEventListener("keyup", event => {
+      if (["ShiftLeft", "ShiftRight"].includes(event.code) && !event.shiftKey) {
+        this.combining = false;
+        this.updatePreview();
+      }
+    }, false);
+
   }
 
   get selection() { return this.items.filter(item => item.selected); }
@@ -126,26 +142,36 @@ class SelectionHistory {
     this.addToHistory(this.selection);
   }
 
-  makeSelection(newSelection, combining = false) {
-    this.items.forEach(item => {
+  calculateSelection(newSelection, combining=false) {
+    return this.items.map(item => {
       const included = newSelection.includes(item);
 
-      const selected = combining
+      const wouldSelect = combining
         ? (included && !item.selected) || (!included && item.selected)
         : included;
 
-      item.setSelectedWithoutNotify(selected);
+      return { item, wouldSelect };
     });
   }
 
-  showPreview(previewItems) {
+  makeSelection(newSelection, combining = false) {
+    this.calculateSelection(newSelection, combining).forEach(({item, wouldSelect}) => {
+      item.setSelectedWithoutNotify(wouldSelect);
+    });
+  }
+
+  showPreview(calculatedSelection) {
     this.containerEl.classList.add("previewing");
-    this.items.forEach(item => item.preview = previewItems.includes(item));
+    calculatedSelection.forEach(({item, wouldSelect}) => item.preview = wouldSelect);
   }
 
   hidePreview() {
     this.containerEl.classList.remove("previewing");
     this.items.forEach(item => item.preview = false);
+  }
+
+  updatePreview() {
+    this.showPreview(this.calculateSelection(this.hoveredHistoryItem, this.combining));
   }
 
   render() {
@@ -177,8 +203,15 @@ class SelectionHistory {
         if (combining) { this.updateHistory(); }
       }, false);
 
-      button.addEventListener("mouseenter", () => this.showPreview(historyItem), false);
-      button.addEventListener("mouseleave", () => this.hidePreview(), false);
+      button.addEventListener("mouseenter", () => {
+        this.hoveredHistoryItem = historyItem;
+        this.updatePreview();
+      }, false);
+
+      button.addEventListener("mouseleave", () => {
+        this.hoveredHistoryItem = [];
+        this.hidePreview();
+      }, false);
 
       this.el.appendChild(button);
     });
@@ -223,5 +256,3 @@ const onResize = () => {
 
 window.addEventListener("resize", onResize, false);
 onResize();
-
-// TODO de-select history item
