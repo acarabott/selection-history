@@ -94,16 +94,19 @@ class SelectionHistory {
     this.el.classList.add("selectionHistory");
 
     this.containerEl;
+    this._historyItemHeight = 50;
     this.items = [];
     addObs(this, "history", []);
 
     this[Obs.getObsName("history")].subscribe(() => this.render());
     this.addToHistory([]);
+
   }
 
   get selection() { return this.items.filter(item => item.selected); }
 
   set historyItemHeight(height) {
+    this._historyItemHeight = height;
     Array.from(this.el.children).forEach(el => el.style.height = `${height}px`);
   }
 
@@ -139,11 +142,19 @@ class SelectionHistory {
 
   render() {
     Array.from(this.el.children).forEach(child => this.el.removeChild(child));
-    this.history.forEach((historyItem, i) => {
+    this.history.forEach(historyItem => {
       const button = document.createElement("div");
+      this.items.forEach(selectable => {
+        const clone = selectable.el.cloneNode();
+        const isSelected = historyItem.includes(selectable);
+
+        isSelected ? clone.classList.add("selected")
+                   : clone.classList.remove("selected");
+        clone.classList.remove("hover");
+
+        button.appendChild(clone);
+      });
       button.classList.add("history-item");
-      // const button = document.createElement("button");
-      button.textContent = `${this.history.length - i} - ${historyItem.length}`;
       button.addEventListener("click", event => {
         const combining = event.shiftKey;
         const items = combining
@@ -158,6 +169,8 @@ class SelectionHistory {
 
       this.el.appendChild(button);
     });
+
+    this.historyItemHeight = this._historyItemHeight;
   }
 }
 
@@ -172,7 +185,7 @@ document.body.appendChild(container);
 const items = Array.from(Array(5)).map(() => {
   const x = `${randomInt(20, 80)}%`;
   const y = `${randomInt(20, 80)}%`;
-  const length = `${randomInt(50, 100)}px`;
+  const length = `${randomInt(10, 20)}%`;
   const selectable = new Selectable(container, x, y, length, length);
 
   return selectable;
