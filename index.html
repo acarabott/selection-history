@@ -15,7 +15,8 @@
       top: 0;
     }
 
-    .selectable.hover, .selectable.selected {
+    .selectable.hover,
+    .selectable.selected {
       background: rgb(43, 156, 212);
     }
 
@@ -25,6 +26,15 @@
 
     .selectable.selected {
       opacity: 0.8;
+    }
+
+    .previewing .selectable.hover,
+    .previewing .selectable.selected {
+      background: rgba(43, 156, 212, 0.25);
+    }
+
+    .previewing .selectable.preview {
+      border: 4px rgb(249, 182, 118) solid;
     }
   </style>
 </head>

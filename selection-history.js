@@ -87,6 +87,20 @@ class Selectable {
     this.updateSelectedClass();
   }
 
+  get hover() { return this.hoverObs.value; }
+  set hover(hover) {
+    this.hoverObs.value = hover;
+    hover ? this.el.classList.add("hover")
+          : this.el.classList.remove("hover");
+
+  }
+
+  get preview() { return this.el.classList.contains("preview"); }
+  set preview(preview) {
+    preview ? this.el.classList.add("preview")
+            : this.el.classList.remove("preview");
+  }
+
   setSelectedWithoutNotify(value) {
     this.selectedObs.setValueWithoutNotify(value);
     this.updateSelectedClass();
@@ -96,28 +110,46 @@ class Selectable {
 class SelectionHistory {
   constructor() {
     this.el = document.createElement("div");
+    this.el.classList.add("selectionHistory");
 
+    this.containerEl;
     this.items = [];
     addObs(this, "history", []);
 
     this[Obs.getObsName("history")].subscribe(() => this.render());
-    this.updateHistory();
+    this.addToHistory([]);
   }
 
-  get selected() { return this.items.filter(item => item.selected); }
+  get selection() { return this.items.filter(item => item.selected); }
 
   addItem(item) {
     item[Obs.getObsName("selected")].subscribe(() => this.updateHistory());
     this.items.push(item);
   }
 
-  updateHistory() {
-    this.history.push(this.selected);
+  addToHistory(items) {
+    this.history.push(items);
     this[Obs.getObsName("history")].notify();
+  }
+
+  updateHistory() {
+    if (this.selection.length === 0) { return; }
+
+    this.addToHistory(this.selection);
   }
 
   makeSelection(newSelection) {
     this.items.forEach(item => item.setSelectedWithoutNotify(newSelection.includes(item)));
+  }
+
+  showPreview(previewItems) {
+    this.containerEl.classList.add("previewing");
+    this.items.forEach(item => item.preview = previewItems.includes(item));
+  }
+
+  hidePreview() {
+    this.containerEl.classList.remove("previewing");
+    this.items.forEach(item => item.preview = false);
   }
 
   render() {
@@ -125,7 +157,18 @@ class SelectionHistory {
     this.history.forEach((historyItem, i) => {
       const button = document.createElement("button");
       button.textContent = `${this.history.length - i} - ${historyItem.length}`;
-      button.addEventListener("click", () => this.makeSelection(historyItem), false);
+      button.addEventListener("click", event => {
+        const combining = event.shiftKey;
+        const items = combining
+          ? [...this.selection, ...historyItem]
+          : historyItem;
+
+        this.makeSelection(items);
+        if (combining) { this.updateHistory(); }
+      }, false);
+      button.addEventListener("mouseenter", () => this.showPreview(historyItem), false);
+      button.addEventListener("mouseleave", () => this.hidePreview(), false);
+
       this.el.appendChild(button);
     });
   }
@@ -141,6 +184,7 @@ const items = Array.from(Array(5)).map(() => {
 });
 
 const selectionHistory = new SelectionHistory;
+selectionHistory.containerEl = container;
 
 items.forEach(item => {
   selectionHistory.addItem(item);
