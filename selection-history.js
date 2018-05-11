@@ -142,8 +142,16 @@ class SelectionHistory {
 
   render() {
     Array.from(this.el.children).forEach(child => this.el.removeChild(child));
-    this.history.forEach(historyItem => {
+    this.history.forEach((historyItem, i) => {
       const button = document.createElement("div");
+      button.classList.add("history-item");
+
+
+      const number = document.createElement("div");
+      number.classList.add("history-number");
+      number.textContent = `${this.history.length - i}`;
+      button.appendChild(number);
+
       this.items.forEach(selectable => {
         const clone = selectable.el.cloneNode();
         const isSelected = historyItem.includes(selectable);
@@ -154,7 +162,7 @@ class SelectionHistory {
 
         button.appendChild(clone);
       });
-      button.classList.add("history-item");
+
       button.addEventListener("click", event => {
         const combining = event.shiftKey;
         const items = combining
@@ -164,6 +172,7 @@ class SelectionHistory {
         this.makeSelection(items);
         if (combining) { this.updateHistory(); }
       }, false);
+
       button.addEventListener("mouseenter", () => this.showPreview(historyItem), false);
       button.addEventListener("mouseleave", () => this.hidePreview(), false);
 
