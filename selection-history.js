@@ -126,8 +126,16 @@ class SelectionHistory {
     this.addToHistory(this.selection);
   }
 
-  makeSelection(newSelection) {
-    this.items.forEach(item => item.setSelectedWithoutNotify(newSelection.includes(item)));
+  makeSelection(newSelection, combining = false) {
+    this.items.forEach(item => {
+      const included = newSelection.includes(item);
+
+      const selected = combining
+        ? (included && !item.selected) || (!included && item.selected)
+        : included;
+
+      item.setSelectedWithoutNotify(selected);
+    });
   }
 
   showPreview(previewItems) {
@@ -165,11 +173,7 @@ class SelectionHistory {
 
       button.addEventListener("click", event => {
         const combining = event.shiftKey;
-        const items = combining
-          ? [...this.selection, ...historyItem]
-          : historyItem;
-
-        this.makeSelection(items);
+        this.makeSelection(historyItem, combining);
         if (combining) { this.updateHistory(); }
       }, false);
 
