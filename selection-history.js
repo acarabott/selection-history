@@ -1,5 +1,5 @@
 class Obs {
-  static getObsName(name) { return `${name}Obs`; }
+  static name(name) { return `${name}Obs`; }
 
   constructor(value) {
     this._value = value;
@@ -28,7 +28,7 @@ class Obs {
 }
 
 function addObs(obj, name, value) {
-  const propName = Obs.getObsName(name);
+  const propName = Obs.name(name);
   obj[propName] = new Obs(value);
 
   Object.defineProperty(obj, name, {
@@ -37,7 +37,11 @@ function addObs(obj, name, value) {
   });
 }
 
+const selectables = [];
 class Selectable {
+  static get all() { return Array.from(selectables); }
+  static add(selectable) { selectables.push(selectable); }
+
   constructor(parent, x, y, width, height) {
     this.el = document.createElement("div");
     this.el.classList.add("selectable");
@@ -55,6 +59,8 @@ class Selectable {
     this.el.addEventListener("click", () => this.selected = !this.selected, false);
 
     parent.appendChild(this.el);
+
+    Selectable.add(this);
   }
 
   updateSelectedClass() {
@@ -98,7 +104,7 @@ class SelectionHistory {
     this.items = [];
     addObs(this, "history", []);
 
-    this[Obs.getObsName("history")].subscribe(() => this.render());
+    this[Obs.name("history")].subscribe(() => this.render());
     this.addToHistory([]);
 
     this.hoveredHistoryItem = [];
@@ -127,13 +133,20 @@ class SelectionHistory {
   }
 
   addItem(item) {
-    item[Obs.getObsName("selected")].subscribe(() => this.updateHistory());
+    item[Obs.name("selected")].subscribe(() => this.updateHistory());
     this.items.push(item);
   }
 
   addToHistory(items) {
+    const haveHistory = this.history.length > 0;
+    if (haveHistory) {
+      const hasChanged = !(items.every(item => this.history[0].includes(item) &&
+                           this.history[0].every(item => items.includes(item))));
+      if (!hasChanged) { return; }
+    }
+
     this.history.unshift(items);
-    this[Obs.getObsName("history")].notify();
+    this[Obs.name("history")].notify();
   }
 
   updateHistory() {
@@ -154,7 +167,7 @@ class SelectionHistory {
     });
   }
 
-  makeSelection(newSelection, combining = false) {
+  makeSelection(newSelection, combining = this.combining) {
     this.calculateSelection(newSelection, combining).forEach(({item, wouldSelect}) => {
       item.setSelectedWithoutNotify(wouldSelect);
     });
@@ -221,6 +234,157 @@ class SelectionHistory {
   }
 }
 
+class DragSelection {
+  constructor(parent) {
+    this.parent = parent;
+    this.el = document.createElement("div");
+    this.el.classList.add("drag-selection");
+
+    this._tl;
+    this._br;
+    this._active;
+    this._clickPoint;
+
+    addObs(this, "toSelect", []);
+
+    this.tl = { x: 0, y: 0 };
+    this.br = { x: 100, y: 100 };
+    this.active = false;
+
+    parent.appendChild(this.el);
+
+    this.onPointerDown = this.onPointerDown.bind(this);
+    this.parent.addEventListener("mousedown", this.onPointerDown, false);
+    this.parent.addEventListener("touchstart", this.onPointerDown, false);
+
+    this.onPointerMove = this.onPointerMove.bind(this);
+    this.onPointerUp = this.onPointerUp.bind(this);
+  }
+
+  get active() { return this._active; }
+  set active(active) {
+    this._active = active;
+    active ? this.el.classList.add("active")
+           : this.el.classList.remove("active");
+  }
+
+  get tl() { return this._tl; }
+  set tl(tl) {
+    this._tl = tl;
+    this.el.style.left = `${tl.x}px`;
+    this.el.style.top = `${tl.y}px`;
+  }
+
+  get br() { return this._br; }
+  set br(br) {
+    this._br = br;
+    this.el.style.width = `${br.x - this.tl.x}px`;
+    this.el.style.height = `${br.y - this.tl.y}px`;
+  }
+
+  getPointFromEvent(event) {
+    return { x: event.clientX, y: event.clientY } ;
+  }
+
+  getRelativePointFromEvent(event) {
+    const absPoint = this.getPointFromEvent(event);
+    const parentRect = this.parent.getBoundingClientRect();
+    const x = absPoint.x - parentRect.x;
+    const y = absPoint.y - parentRect.y;
+
+    return { x, y };
+  }
+
+  onPointerDown(event) {
+    this.active = true;
+    const relativePoint = this.getRelativePointFromEvent(event);
+    this.tl = relativePoint;
+    this.br = relativePoint;
+    this._clickPoint = relativePoint;
+
+    const point = this.getPointFromEvent(event);
+    if (!Selectable.all.some(sel => {
+      const clientRect = sel.el.getBoundingClientRect();
+      const clicked = point.x >= clientRect.x &&
+                      point.y >= clientRect.y &&
+                      point.x <= clientRect.x + clientRect.width &&
+                      point.y <= clientRect.y + clientRect.height;
+
+      return clicked;
+    })) {
+      this.toSelect = [];
+    }
+
+    document.addEventListener("mousemove", this.onPointerMove, false);
+    document.addEventListener("touchmove", this.onPointerMove, false);
+    document.addEventListener("mouseup", this.onPointerUp, false);
+    document.addEventListener("touchend", this.onPointerUp, false);
+  }
+
+  overlapsRect(rect) {
+    return this.br.x > rect.x &&
+           this.tl.x < rect.x + rect.width &&
+           this.br.y > rect.y &&
+           this.tl.y < rect.y + rect.height;
+  }
+
+  onPointerMove(event) {
+    const point = this.getRelativePointFromEvent(event);
+
+    this.tl = {
+      x: Math.min(point.x, this._clickPoint.x),
+      y: Math.min(point.y, this._clickPoint.y)
+    };
+
+    this.br = {
+      x: Math.max(point.x, this._clickPoint.x),
+      y: Math.max(point.y, this._clickPoint.y)
+    };
+
+    const parentRect = this.parent.getBoundingClientRect();
+
+    const toSelect = Selectable.all.filter(selectable => {
+      const selectClientRect = selectable.el.getBoundingClientRect();
+
+      const relativeRect = {
+        x:      selectClientRect.x - parentRect.x,
+        y:      selectClientRect.y - parentRect.y,
+        width : selectClientRect.width,
+        height: selectClientRect.height
+      };
+
+      return this.overlapsRect(relativeRect);
+    });
+
+    Selectable.all.forEach(sel => sel.hover = toSelect.includes(sel));
+
+    this[Obs.name("toSelect")].setValueWithoutNotify(toSelect);
+  }
+
+  onPointerUp(event) {
+    this.active = false;
+    if (this.toSelect.length > 0) {
+      this.toSelect.forEach(sel => sel.setSelectedWithoutNotify(true));
+      this[Obs.name("toSelect")].notify();
+      this[Obs.name("toSelect")].setValueWithoutNotify([]);
+    }
+
+    const point = this.getPointFromEvent(event);
+    Selectable.all.forEach(sel => {
+      const clientRect = sel.el.getBoundingClientRect();
+      sel.hover = point.x >= clientRect.x &&
+                  point.y >= clientRect.y &&
+                  point.x <= clientRect.x + clientRect.width &&
+                  point.y <= clientRect.y + clientRect.height;
+    });
+
+    document.removeEventListener("mousemove", this.onPointerMove, false);
+    document.removeEventListener("touchmove", this.onPointerMove, false);
+    document.removeEventListener("mouseup", this.onPointerUp, false);
+    document.removeEventListener("touchend", this.onPointerUp, false);
+  }
+}
+
 function randomInt(min, max) {
   return Math.floor(min + (Math.random() * (max - min)));
 }
@@ -257,3 +421,12 @@ const onResize = () => {
 
 window.addEventListener("resize", onResize, false);
 onResize();
+
+
+const dragSelection = new DragSelection(container);
+dragSelection[Obs.name("toSelect")].subscribe(toSelect => {
+  selectionHistory.makeSelection(toSelect);
+  selectionHistory.updateHistory();
+});
+
+// TODO touch support

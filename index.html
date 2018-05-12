@@ -25,6 +25,7 @@
     .container {
       position: relative;
       width: 65%;
+      overflow: hidden;
     }
 
     .selectable {
@@ -75,6 +76,16 @@
       position: absolute;
       left: 5px;
       top: 5px;
+    }
+
+    .drag-selection {
+      position: absolute;
+      border: 1px black dashed;
+      display: none;
+    }
+
+    .drag-selection.active {
+      display: block;
     }
   </style>
 </head>
