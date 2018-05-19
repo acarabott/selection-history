@@ -48,13 +48,12 @@
       opacity: 0.8;
     }
 
-    .previewing .selectable.hover,
-    .previewing .selectable.selected {
-      background: rgba(43, 156, 212, 0.15);
-    }
-
     .previewing .selectable.preview {
       border: 4px rgb(43, 156, 212) solid;
+    }
+
+    .previewing .selectable.selected {
+      background: white;
     }
 
     .selectionHistory {
@@ -84,12 +83,12 @@
       display: none;
     }
 
-    .drag-selection.active {
+    .drag-selection.isDragSelecting {
       display: block;
     }
   </style>
 </head>
 <body>
 </body>
-<script src="selection-history.js"></script>
+<script src="dist/bundle.js"></script>
 </html>

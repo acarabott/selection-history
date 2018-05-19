@@ -1,0 +1,44 @@
+{
+  "files": [
+    "src/selection-history.ts"
+  ],
+  "compilerOptions": {
+    "allowJs": false,
+    "checkJs": false,
+    "diagnostics": false,
+    "downlevelIteration": false,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": [
+      "ES2015",
+      "ES2016",
+      "DOM",
+      "DOM.Iterable",
+      "WebWorker",
+      "ScriptHost",
+      "ES2015.Core",
+      "ES2015.Collection",
+      "ES2015.Generator",
+      "ES2015.Iterable",
+      "ES2015.Promise",
+      "ES2015.Proxy",
+      "ES2015.Reflect",
+      "ES2015.Symbol",
+      "ES2015.Symbol.WellKnown",
+      "ES2016.Array.Include",
+      "ES2017.object",
+      "ES2017.SharedMemory",
+      "ES2017.TypedArrays",
+    ],
+    "listEmittedFiles": false,
+    "listFiles": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "outDir": "dist",
+    "pretty": true,
+    "strict": true,
+    "target": "ES2015"
+  }
+}
