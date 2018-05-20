@@ -39,5 +39,5 @@ selectionView.selectionStateObs.subscribe((selectables: SelectableView[]) => {
 });
 
 // TODO final button types
-// TODO touch support
+// TODO touch support (shift key)
 // TODO better item placement (video editing? )

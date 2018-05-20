@@ -21,9 +21,11 @@ export class SelectionView {
 
   protected previousSelectionState: Map<SelectableView, boolean>;
   protected parent: HTMLElement;
+  protected inputPoint: IPoint;
   protected _tl!: IPoint;
   protected _br!: IPoint;
   protected clickPoint!: IPoint;
+  protected combining: boolean;
   protected _isDragSelecting!: boolean;
 
 
@@ -41,6 +43,8 @@ export class SelectionView {
     this.tl = { x: 0, y: 0 };
     this.br = { x: 100, y: 100 };
     this.isDragSelecting = false;
+    this.inputPoint = { x: 0, y: 0 };
+    this.combining = false;
 
     parent.appendChild(this.el);
 
@@ -49,6 +53,12 @@ export class SelectionView {
 
     this.onPointerMove = this.onPointerMove.bind(this);
     this.onPointerUp = this.onPointerUp.bind(this);
+
+    this.onKeyDown = this.onKeyDown.bind(this);
+    document.addEventListener("keydown", this.onKeyDown, false);
+
+    this.onKeyUp = this.onKeyUp.bind(this);
+    document.addEventListener("keyup", this.onKeyUp, false);
   }
 
   get isDragSelecting() { return this._isDragSelecting; }
@@ -70,6 +80,20 @@ export class SelectionView {
     this._br = br;
     this.el.style.width = `${br.x - this.tl.x}px`;
     this.el.style.height = `${br.y - this.tl.y}px`;
+  }
+
+  onKeyDown(event: KeyboardEvent) {
+    if (["ShiftLeft", "ShiftRight"].includes(event.code)) {
+      this.combining = true;
+      this.updateSelection();
+    }
+  }
+
+  onKeyUp(event: KeyboardEvent) {
+    if (["ShiftLeft", "ShiftRight"].includes(event.code) && !event.shiftKey) {
+      this.combining = false;
+      this.updateSelection();
+    }
   }
 
   getPointFromEvent(event: MouseEvent) {
@@ -125,17 +149,15 @@ export class SelectionView {
            this.tl.y < rect.y + rect.height;
   }
 
-  onPointerMove(event: MouseEvent) {
-    const point = this.getRelativePointFromEvent(event);
-
+  updateSelection() {
     this.tl = {
-      x: Math.min(point.x, this.clickPoint.x),
-      y: Math.min(point.y, this.clickPoint.y)
+      x: Math.min(this.inputPoint.x, this.clickPoint.x),
+      y: Math.min(this.inputPoint.y, this.clickPoint.y)
     };
 
     this.br = {
-      x: Math.max(point.x, this.clickPoint.x),
-      y: Math.max(point.y, this.clickPoint.y)
+      x: Math.max(this.inputPoint.x, this.clickPoint.x),
+      y: Math.max(this.inputPoint.y, this.clickPoint.y)
     };
 
     const parentRect = this.parent.getBoundingClientRect();
@@ -154,12 +176,17 @@ export class SelectionView {
 
       const wasSelected = this.previousSelectionState.get(view);
 
-      view.selected = event.shiftKey
+      view.selected = this.combining
         ? isOverlapping
           ? !wasSelected
           : wasSelected
         : isOverlapping;
     });
+  }
+
+  onPointerMove(event: MouseEvent) {
+    this.inputPoint = this.getRelativePointFromEvent(event);
+    this.updateSelection();
   }
 
   onPointerUp(event: MouseEvent) {
