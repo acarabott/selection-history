@@ -65,9 +65,9 @@
     }
 
     .history-item {
+      display: block;
       position: relative;
       width: 100%;
-      display: block;
       border-bottom: 1px black solid;
     }
 
@@ -75,6 +75,41 @@
       position: absolute;
       left: 5px;
       top: 5px;
+    }
+
+    .history-item .preview {
+      position: relative;
+      display: inline-block;
+      width: 90%;
+      height: 100%;
+      border-right: 1px black solid;
+    }
+
+    .history-item .buttons {
+      position: absolute;
+      width: 10%;
+      height: 100%;
+      left: 90%;
+      top: 0;
+    }
+
+    .history-item .button {
+      height: 25%;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px black solid;
+    }
+
+    .history-item .button:last-child {
+      border-bottom: none;
+    }
+
+    .history-item .button:hover {
+      background: rgba(43, 156, 212);
+      color: white;
     }
 
     .drag-selection {
