@@ -24,7 +24,7 @@ export class SelectionView {
   protected inputPoint: IPoint;
   protected _tl!: IPoint;
   protected _br!: IPoint;
-  protected clickPoint!: IPoint;
+  protected clickPoint: IPoint;
   protected combining: boolean;
   protected _isDragSelecting!: boolean;
 
@@ -37,7 +37,7 @@ export class SelectionView {
     this._tl;
     this._br;
     this._isDragSelecting;
-    this.clickPoint;
+    this.clickPoint = { x: 0, y: 0 };
 
     this.previousSelectionState = new Map();
     this.tl = { x: 0, y: 0 };
@@ -52,6 +52,8 @@ export class SelectionView {
     this.parent.addEventListener("mousedown", this.onPointerDown, false);
 
     this.onPointerMove = this.onPointerMove.bind(this);
+    document.addEventListener("mousemove", this.onPointerMove, false);
+
     this.onPointerUp = this.onPointerUp.bind(this);
 
     this.onKeyDown = this.onKeyDown.bind(this);
@@ -85,14 +87,18 @@ export class SelectionView {
   onKeyDown(event: KeyboardEvent) {
     if (["ShiftLeft", "ShiftRight"].includes(event.code)) {
       this.combining = true;
-      this.updateSelection();
+      if (this.isDragSelecting) {
+        this.updateSelection();
+      }
     }
   }
 
   onKeyUp(event: KeyboardEvent) {
     if (["ShiftLeft", "ShiftRight"].includes(event.code) && !event.shiftKey) {
       this.combining = false;
-      this.updateSelection();
+      if (this.isDragSelecting) {
+        this.updateSelection();
+      }
     }
   }
 
@@ -138,7 +144,6 @@ export class SelectionView {
     this.br = relativePoint;
     this.clickPoint = relativePoint;
 
-    document.addEventListener("mousemove", this.onPointerMove, false);
     document.addEventListener("mouseup", this.onPointerUp, false);
   }
 
@@ -185,25 +190,27 @@ export class SelectionView {
   }
 
   onPointerMove(event: MouseEvent) {
-    this.inputPoint = this.getRelativePointFromEvent(event);
-    this.updateSelection();
+    if (this.isDragSelecting) {
+      this.inputPoint = this.getRelativePointFromEvent(event);
+      this.updateSelection();
+    }
+    else {
+      const point = this.getPointFromEvent(event);
+      SelectableView.all.forEach(sel => {
+        const clientRect = sel.rect;
+        const rectContainsPoint = point.x >= clientRect.x &&
+                                  point.y >= clientRect.y &&
+                                  point.x <= clientRect.x + clientRect.width &&
+                                  point.y <= clientRect.y + clientRect.height;
+        sel.hover = rectContainsPoint;
+      });
+    }
   }
 
-  onPointerUp(event: MouseEvent) {
+  onPointerUp(_event: MouseEvent) {
     this.isDragSelecting = false;
     this.selectionState = SelectableView.all;
 
-    const point = this.getPointFromEvent(event);
-    SelectableView.all.forEach(sel => {
-      const clientRect = sel.rect;
-      const rectContainsPoint = point.x >= clientRect.x &&
-                                point.y >= clientRect.y &&
-                                point.x <= clientRect.x + clientRect.width &&
-                                point.y <= clientRect.y + clientRect.height;
-      sel.hover = rectContainsPoint;
-    });
-
-    document.removeEventListener("mousemove", this.onPointerMove, false);
     document.removeEventListener("mouseup", this.onPointerUp, false);
   }
 }

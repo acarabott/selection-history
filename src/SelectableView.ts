@@ -30,9 +30,6 @@ export class SelectableView {
     this.selectedObs = new Obs(false);
     this.hoverObs = new Obs(false);
 
-    this.el.addEventListener("mouseenter", () => this.hover = true, false);
-    this.el.addEventListener("mouseleave", () => this.hover = false, false);
-
     parent.appendChild(this.el);
 
     SelectableView.add(this);
