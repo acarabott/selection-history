@@ -13,6 +13,11 @@ interface IRect {
   height: number;
 }
 
+interface IPointerEvent {
+  clientX: number;
+  clientY: number;
+}
+
 export class SelectionView {
   public el: HTMLElement;
   @observable
@@ -21,12 +26,14 @@ export class SelectionView {
 
   protected previousSelectionState: Map<SelectableView, boolean>;
   protected parent: HTMLElement;
-  protected inputPoint: IPoint;
+  protected inputPointRelative: IPoint;
+  protected inputPointClient: IPoint;
   protected _tl!: IPoint;
   protected _br!: IPoint;
   protected clickPoint: IPoint;
   protected combining: boolean;
   protected _isDragSelecting!: boolean;
+  protected clickedTarget: HTMLElement | undefined;
 
 
   constructor(parent: HTMLElement) {
@@ -43,18 +50,24 @@ export class SelectionView {
     this.tl = { x: 0, y: 0 };
     this.br = { x: 100, y: 100 };
     this.isDragSelecting = false;
-    this.inputPoint = { x: 0, y: 0 };
+    this.inputPointRelative = { x: 0, y: 0 };
+    this.inputPointClient = { x: 0, y: 0 };
     this.combining = false;
 
     parent.appendChild(this.el);
 
-    this.onPointerDown = this.onPointerDown.bind(this);
-    this.parent.addEventListener("mousedown", this.onPointerDown, false);
+    this.onMouseDown = this.onMouseDown.bind(this);
+    this.parent.addEventListener("mousedown", this.onMouseDown, false);
 
-    this.onPointerMove = this.onPointerMove.bind(this);
-    document.addEventListener("mousemove", this.onPointerMove, false);
+    this.onMouseMove = this.onMouseMove.bind(this);
+    document.addEventListener("mousemove", this.onMouseMove, false);
 
-    this.onPointerUp = this.onPointerUp.bind(this);
+    this.onMouseUp = this.onMouseUp.bind(this);
+    document.addEventListener("mouseup", this.onMouseUp, false);
+
+    document.addEventListener("touchstart", (e) => this.onTouchStart(e), false);
+    document.addEventListener("touchmove", (e) => this.onTouchMove(e), false);
+    document.addEventListener("touchend", (e) => this.onTouchEnd(e), false);
 
     this.onKeyDown = this.onKeyDown.bind(this);
     document.addEventListener("keydown", this.onKeyDown, false);
@@ -102,11 +115,11 @@ export class SelectionView {
     }
   }
 
-  getPointFromEvent(event: MouseEvent) {
+  getPointFromEvent(event: IPointerEvent) {
     return { x: event.clientX, y: event.clientY } ;
   }
 
-  getRelativePointFromEvent(event: MouseEvent) {
+  getRelativePointFromEvent(event: IPointerEvent) {
     const absPoint = this.getPointFromEvent(event);
     const parentRect = this.parent.getBoundingClientRect();
     const x = absPoint.x - parentRect.left;
@@ -115,17 +128,60 @@ export class SelectionView {
     return { x, y };
   }
 
-  onPointerDown(event: MouseEvent) {
-    if (event.target === null) { return; }
+  updateInputPoints(event: IPointerEvent) {
+    this.inputPointClient = this.getPointFromEvent(event);
+    this.inputPointRelative = this.getRelativePointFromEvent(event);
+  }
 
+  onMouseDown(event: MouseEvent) {
+    this.clickedTarget = event.target as HTMLElement;
+    this.updateInputPoints(event);
+    this.onPointerDown();
+  }
+
+  onMouseMove(event: MouseEvent) {
+    this.updateInputPoints(event);
+    this.onPointerMove();
+  }
+
+  onMouseUp(event: MouseEvent) {
+    this.updateInputPoints(event);
+    this.onPointerUp();
+  }
+
+  updateTouchInputPoints(event: TouchEvent) {
+    if (event.changedTouches.length === 0) { return; }
+    const pointerEvent: IPointerEvent = event.changedTouches[0];
+    this.updateInputPoints(pointerEvent);
+  }
+
+  onTouchStart(event: TouchEvent) {
+    this.updateTouchInputPoints(event);
+    this.onPointerDown();
+  }
+
+  onTouchMove(event: TouchEvent) {
+    this.updateTouchInputPoints(event);
+    this.onPointerMove();
+  }
+
+  onTouchEnd(event: TouchEvent) {
+    this.updateTouchInputPoints(event);
+    this.onPointerUp();
+  }
+
+  onPointerDown() {
     this.previousSelectionState = new Map(SelectableView.all.map(sel => {
       return <[SelectableView, boolean]>[sel, sel.selected];
     }));
 
-    const selectable = SelectableView.getFromEl(event.target as HTMLElement);
+
+    const selectable = this.clickedTarget === undefined
+      ? undefined
+      : SelectableView.getFromEl(this.clickedTarget);
     const didClickSelectable = selectable instanceof SelectableView;
 
-    if (event.shiftKey) {
+    if (this.combining) {
       if (didClickSelectable) {
         selectable!.selected = !selectable!.selected
       }
@@ -139,12 +195,9 @@ export class SelectionView {
     }
 
     this.isDragSelecting = true;
-    const relativePoint = this.getRelativePointFromEvent(event);
-    this.tl = relativePoint;
-    this.br = relativePoint;
-    this.clickPoint = relativePoint;
-
-    document.addEventListener("mouseup", this.onPointerUp, false);
+    this.tl = this.inputPointRelative;
+    this.br = this.inputPointRelative;
+    this.clickPoint = this.inputPointRelative;
   }
 
   overlapsRect(rect: IRect) {
@@ -156,13 +209,13 @@ export class SelectionView {
 
   updateSelection() {
     this.tl = {
-      x: Math.min(this.inputPoint.x, this.clickPoint.x),
-      y: Math.min(this.inputPoint.y, this.clickPoint.y)
+      x: Math.min(this.inputPointRelative.x, this.clickPoint.x),
+      y: Math.min(this.inputPointRelative.y, this.clickPoint.y)
     };
 
     this.br = {
-      x: Math.max(this.inputPoint.x, this.clickPoint.x),
-      y: Math.max(this.inputPoint.y, this.clickPoint.y)
+      x: Math.max(this.inputPointRelative.x, this.clickPoint.x),
+      y: Math.max(this.inputPointRelative.y, this.clickPoint.y)
     };
 
     const parentRect = this.parent.getBoundingClientRect();
@@ -189,28 +242,24 @@ export class SelectionView {
     });
   }
 
-  onPointerMove(event: MouseEvent) {
+  onPointerMove() {
     if (this.isDragSelecting) {
-      this.inputPoint = this.getRelativePointFromEvent(event);
       this.updateSelection();
     }
     else {
-      const point = this.getPointFromEvent(event);
       SelectableView.all.forEach(sel => {
         const clientRect = sel.rect;
-        const rectContainsPoint = point.x >= clientRect.x &&
-                                  point.y >= clientRect.y &&
-                                  point.x <= clientRect.x + clientRect.width &&
-                                  point.y <= clientRect.y + clientRect.height;
+        const rectContainsPoint = this.inputPointClient.x >= clientRect.x &&
+                                  this.inputPointClient.y >= clientRect.y &&
+                                  this.inputPointClient.x <= clientRect.x + clientRect.width &&
+                                  this.inputPointClient.y <= clientRect.y + clientRect.height;
         sel.hover = rectContainsPoint;
       });
     }
   }
 
-  onPointerUp(_event: MouseEvent) {
+  onPointerUp() {
     this.isDragSelecting = false;
     this.selectionState = SelectableView.all;
-
-    document.removeEventListener("mouseup", this.onPointerUp, false);
   }
 }

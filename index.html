@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Selection History</title>
+  <meta name="viewport" content="width=device-width, user-scalable=no">
   <style>
     html, body {
       height: 100%;
@@ -9,15 +10,21 @@
       margin: 0;
       padding: 0;
       font-family: sans-serif;
+      overflow: hidden;
+      position: fixed;
     }
 
     * {
       box-sizing: border-box;
+      -webkit-user-select: none;  /* Chrome all / Safari all */
+      -moz-user-select: none;     /* Firefox all */
+      -ms-user-select: none;      /* IE 10+ */
+      user-select: none;          /* Likely future */
     }
 
     .container,
     .selectionHistory {
-      height: 90%;
+      height: 95%;
       margin: 2.5%;
       border: 1px black solid;
     }
@@ -25,7 +32,6 @@
     .container {
       position: relative;
       width: 65%;
-      overflow: hidden;
     }
 
     .selectable {
