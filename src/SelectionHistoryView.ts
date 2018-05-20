@@ -100,8 +100,9 @@ export class SelectionHistoryView {
       };
 
       const addButtonAction = (button: HTMLElement, check: SelectionCheck) => {
+        button.classList.add("button");
+
         button.addEventListener("click", () => {
-          console.log('hi');
           this.canPreview = false;
           setTimeout(() => this.canPreview = true, animationDurationMs * 1.5);
 
@@ -201,7 +202,6 @@ export class SelectionHistoryView {
 
       buttonDefs.forEach((buttonDef, _i, array) => {
         const button = document.createElement("div");
-        button.classList.add("button");
         button.classList.add(buttonDef.name);
         button.textContent = buttonDef.textContent;
         button.style.height = `${100 / array.length}%`;
