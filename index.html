@@ -77,19 +77,23 @@
       top: 5px;
     }
 
+    :root {
+      --button-width: 20%;
+    }
+
     .history-item .preview-view {
       position: relative;
       display: inline-block;
-      width: 90%;
+      width: calc(100% - var(--button-width));
       height: 100%;
       border-right: 1px black solid;
     }
 
     .history-item .buttons {
       position: absolute;
-      width: 10%;
+      width: var(--button-width);
       height: 100%;
-      left: 90%;
+      left: calc(100% - var(--button-width));
       top: 0;
     }
 
