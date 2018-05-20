@@ -13,12 +13,11 @@ export class SelectionHistoryView {
   protected parentEl: HTMLElement;
   protected _historyItemHeight: number;
   protected currentSelectionObs!: Obs;
-  protected hoveredHistoryItem?: HistoryItem;
   @observable
   protected history!: HistoryItem[];
   protected historyObs!: Obs;
   protected _isPreviewing!: boolean;
-  protected isCombiningPreviews: boolean;
+  protected canPreview: boolean;
 
   constructor(parentEl: HTMLElement) {
     this.el = document.createElement("div");
@@ -28,7 +27,8 @@ export class SelectionHistoryView {
     this._historyItemHeight = 50;
     this.currentSelection = [];
     this.history = [];
-    this.isCombiningPreviews = false;
+    this.canPreview = true;
+
 
     this.currentSelectionObs.subscribe((selectables: SelectableView[]) => {
       this.addToHistory(new Map(selectables.map(selectable => {
@@ -57,13 +57,15 @@ export class SelectionHistoryView {
 
   addToHistory(item: HistoryItem) {
     const selectedStates = Array.from(item.values());
-    if (!selectedStates.some(bool => bool)) { return; }
+    const someSelected = selectedStates.some(bool => bool);
+    if (!someSelected) { return; }
 
     const haveHistory = this.history.length > 0;
     if (haveHistory) {
-      const hasChanged = Array.from(item.entries()).map(([sel, state]) => {
-        return state !== this.history[0].get(sel);
-      });
+      const hasChanged = Array.from(item.entries()).map(([sel, newState]) => {
+        const currentState = this.history[0].get(sel);
+        return newState !== currentState;
+      }).some(hasChanged => hasChanged);
       if (!hasChanged) { return; }
     }
 
@@ -81,6 +83,8 @@ export class SelectionHistoryView {
 
   render() {
     Array.from(this.el.children).forEach(child => this.el.removeChild(child));
+
+    const animationDurationMs = 250;
     this.history.forEach((historyItem, i) => {
       const view = document.createElement("div");
       view.classList.add("history-item");
@@ -89,6 +93,7 @@ export class SelectionHistoryView {
       if (isFirst) {
         view.style.marginTop = `${-this.historyItemHeight}px`;
         view.classList.add("first");
+        view.style.animationDuration = `${animationDurationMs}Ms`;
       }
       view.style.height = `${this.historyItemHeight}px`;
 
@@ -138,7 +143,7 @@ export class SelectionHistoryView {
         {
           name: "invert",
           textContent: "I",
-          check: (inHistory, inCurrent) => !(inCurrent && inHistory)
+          check: (inHistory) => !inHistory
         },
         {
           name: "add",
@@ -169,6 +174,9 @@ export class SelectionHistoryView {
         buttons.appendChild(button);
 
         button.addEventListener("click", () => {
+          this.canPreview = false;
+          setTimeout(() => this.canPreview = true, animationDurationMs * 1.5);
+
           const selection = getSelection(buttonDef.check);
           selection.forEach((selected, view) => view.selected = selected);
           this.addToHistory(selection);
@@ -177,8 +185,10 @@ export class SelectionHistoryView {
 
         button.addEventListener("mouseenter", () => {
           const selection = getSelection(buttonDef.check);
-          this.showPreview(selection);
-          this.isPreviewing = true;
+          if (this.canPreview) {
+            this.showPreview(selection);
+            this.isPreviewing = true;
+          }
         }, false);
 
         button.addEventListener("mouseleave", () => {

@@ -38,6 +38,6 @@ selectionView.selectionStateObs.subscribe((selectables: SelectableView[]) => {
   selectionHistory.currentSelection = selectables;
 });
 
+// TODO final button types
 // TODO touch support
 // TODO better item placement (video editing? )
-// TODO preview auto updates when history auto scrolls
