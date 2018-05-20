@@ -141,11 +141,6 @@ export class SelectionHistoryView {
           check: (inHistory) => inHistory
         },
         {
-          name: "invert",
-          textContent: "I",
-          check: (inHistory) => !inHistory
-        },
-        {
           name: "add",
           textContent: "+",
           check: (inHistory, inCurrent) => inCurrent || inHistory
@@ -154,6 +149,16 @@ export class SelectionHistoryView {
           name: "subtract",
           textContent: "-",
           check: (inHistory, inCurrent) => inCurrent && !inHistory
+        },
+        {
+          name: "anti",
+          textContent: "A",
+          check: (inHistory, inCurrent) => !inCurrent && inHistory
+        },
+        {
+          name: "inverse",
+          textContent: "I",
+          check: (inHistory) => !inHistory
         },
       ];
 
