@@ -40,3 +40,4 @@ selectionView.selectionStateObs.subscribe((selectables: SelectableView[]) => {
 
 // TODO touch support
 // TODO better item placement (video editing? )
+// TODO preview auto updates when history auto scrolls

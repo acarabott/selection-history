@@ -84,7 +84,14 @@ export class SelectionHistoryView {
     this.history.forEach((historyItem, i) => {
       const view = document.createElement("div");
       view.classList.add("history-item");
+
+      const isFirst = i === 0;
+      if (isFirst) {
+        view.style.marginTop = `${-this.historyItemHeight}px`;
+        view.classList.add("first");
+      }
       view.style.height = `${this.historyItemHeight}px`;
+
       this.el.appendChild(view);
 
 
