@@ -84,8 +84,49 @@ export class SelectionHistoryView {
   render() {
     Array.from(this.el.children).forEach(child => this.el.removeChild(child));
 
+    type SelectionCheck = (inHistory: boolean, inCurrent: boolean) => boolean;
     const animationDurationMs = 250;
+
     this.history.forEach((historyItem, i) => {
+      // Helper funcs
+      // ------------
+      const getSelection = (test: SelectionCheck): HistoryItem => {
+        const currentStateEntries = Array.from(this.history[0].entries());
+        return new Map(currentStateEntries.map(([view, inCurrent]) => {
+          const inHistory = historyItem.has(view) && historyItem.get(view)!;
+          const isSelected = test(inHistory, inCurrent)
+          return <HistoryPair>[view, isSelected];
+        }));
+      };
+
+      const addButtonAction = (button: HTMLElement, check: SelectionCheck) => {
+        button.addEventListener("click", () => {
+          console.log('hi');
+          this.canPreview = false;
+          setTimeout(() => this.canPreview = true, animationDurationMs * 1.5);
+
+          const selection = getSelection(check);
+          selection.forEach((selected, view) => view.selected = selected);
+          this.addToHistory(selection);
+          this.parentEl.classList.remove("previewing");
+        }, false);
+
+        button.addEventListener("mouseenter", () => {
+          const selection = getSelection(check);
+          if (this.canPreview) {
+            this.showPreview(selection);
+            this.isPreviewing = true;
+          }
+        }, false);
+
+        button.addEventListener("mouseleave", () => {
+          this.hidePreview();
+          this.isPreviewing = false;
+        }, false);
+      };
+
+      // View
+      // ------------
       const view = document.createElement("div");
       view.classList.add("history-item");
 
@@ -99,16 +140,17 @@ export class SelectionHistoryView {
 
       this.el.appendChild(view);
 
-
       const number = document.createElement("div");
       number.classList.add("history-number");
       number.textContent = `${this.history.length - i}`;
       view.appendChild(number);
 
-
+      // Preview / Body
+      // --------------
       const preview = document.createElement("div");
       view.appendChild(preview);
       preview.classList.add("preview-view");
+      addButtonAction(preview, (inHistory) => inHistory);
 
       historyItem.forEach((selected, view) => {
         const clone = view.cloneEl();
@@ -121,12 +163,11 @@ export class SelectionHistoryView {
         preview.appendChild(clone);
       });
 
-
+      // Buttons
+      // -------
       const buttons = document.createElement("div");
       buttons.classList.add("buttons");
       view.appendChild(buttons);
-
-      type SelectionCheck = (inHistory: boolean, inCurrent: boolean) => boolean;
 
       interface IButtonDef {
         name: string;
@@ -135,11 +176,6 @@ export class SelectionHistoryView {
       };
 
       const buttonDefs: IButtonDef[] = [
-        {
-          name: "solo",
-          textContent: "S",
-          check: (inHistory) => inHistory
-        },
         {
           name: "add",
           textContent: "+",
@@ -153,7 +189,8 @@ export class SelectionHistoryView {
         {
           name: "anti",
           textContent: "A",
-          check: (inHistory, inCurrent) => !inCurrent && inHistory
+          check: (inHistory, inCurrent) => (!inCurrent && inHistory) ||
+                                           (inCurrent && !inHistory)
         },
         {
           name: "inverse",
@@ -162,15 +199,6 @@ export class SelectionHistoryView {
         },
       ];
 
-      const getSelection = (test: SelectionCheck): HistoryItem => {
-        const currentStateEntries = Array.from(this.history[0].entries());
-        return new Map(currentStateEntries.map(([view, inCurrent]) => {
-          const inHistory = historyItem.has(view) && historyItem.get(view)!;
-          const isSelected = test(inHistory, inCurrent)
-          return <HistoryPair>[view, isSelected];
-        }));
-      };
-
       buttonDefs.forEach((buttonDef, _i, array) => {
         const button = document.createElement("div");
         button.classList.add("button");
@@ -178,29 +206,7 @@ export class SelectionHistoryView {
         button.textContent = buttonDef.textContent;
         button.style.height = `${100 / array.length}%`;
         buttons.appendChild(button);
-
-        button.addEventListener("click", () => {
-          this.canPreview = false;
-          setTimeout(() => this.canPreview = true, animationDurationMs * 1.5);
-
-          const selection = getSelection(buttonDef.check);
-          selection.forEach((selected, view) => view.selected = selected);
-          this.addToHistory(selection);
-          this.parentEl.classList.remove("previewing");
-        }, false);
-
-        button.addEventListener("mouseenter", () => {
-          const selection = getSelection(buttonDef.check);
-          if (this.canPreview) {
-            this.showPreview(selection);
-            this.isPreviewing = true;
-          }
-        }, false);
-
-        button.addEventListener("mouseleave", () => {
-          this.hidePreview();
-          this.isPreviewing = false;
-        }, false);
+        addButtonAction(button, buttonDef.check);
       });
     });
   }
