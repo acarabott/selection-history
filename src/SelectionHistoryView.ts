@@ -75,15 +75,6 @@ export class SelectionHistoryView {
     item.forEach((selected, view) => view.preview = selected);
   }
 
-  updatePreview() {
-    const currentSelection = this.history[0];
-    currentSelection.forEach((selected, view) => {
-      const isHoverSelected = this.hoveredHistoryItem === undefined ||
-                              this.hoveredHistoryItem.get(view)
-      view.preview = isHoverSelected || (this.isCombiningPreviews && selected);
-    });
-  }
-
   hidePreview() {
     this.currentSelection.forEach(item => item.preview = false);
   }
@@ -105,7 +96,7 @@ export class SelectionHistoryView {
 
       const preview = document.createElement("div");
       view.appendChild(preview);
-      preview.classList.add("preview");
+      preview.classList.add("preview-view");
 
       historyItem.forEach((selected, view) => {
         const clone = view.cloneEl();
@@ -123,132 +114,71 @@ export class SelectionHistoryView {
       buttons.classList.add("buttons");
       view.appendChild(buttons);
 
-      // Solo
-      // -----------------------------------------------------------------------
-      const soloButton = document.createElement("div");
-      soloButton.classList.add("button");
-      soloButton.classList.add("solo");
-      soloButton.textContent = "S";
-      buttons.appendChild(soloButton);
+      type SelectionCheck = (inHistory: boolean, inCurrent: boolean) => boolean;
 
-      soloButton.addEventListener("click", () => {
-        historyItem.forEach((selected, view) => view.selected = selected);
-        this.parentEl.classList.remove("previewing");
-      }, false);
-
-      soloButton.addEventListener("mouseenter", () => {
-        this.showPreview(historyItem);
-        this.isPreviewing = true;
-      }, false);
-
-      soloButton.addEventListener("mouseleave", () => {
-        this.hidePreview();
-        this.isPreviewing = false;
-      }, false);
-
-      // Add
-      // -----------------------------------------------------------------------
-
-      const addButton = document.createElement("div");
-      addButton.classList.add("button");
-      addButton.classList.add("add");
-      addButton.textContent = "+";
-      buttons.appendChild(addButton);
-
-      const getAddSelection = (): HistoryItem => {
-        const currentStateEntries = Array.from(this.history[0].entries());
-        const combinedState: HistoryItem = new Map(currentStateEntries.map(([view, selected]) => {
-          return <HistoryPair>[view, selected || historyItem.get(view)];
-        }));
-
-        return combinedState;
+      interface IButtonDef {
+        name: string;
+        textContent: string;
+        check: SelectionCheck;
       };
 
-      addButton.addEventListener("click", () => {
-        const addSelection = getAddSelection();
-        addSelection.forEach((selected, view) => view.selected = selected);
-        this.parentEl.classList.remove("previewing");
-      }, false);
+      const buttonDefs: IButtonDef[] = [
+        {
+          name: "solo",
+          textContent: "S",
+          check: (inHistory) => inHistory
+        },
+        {
+          name: "invert",
+          textContent: "I",
+          check: (inHistory, inCurrent) => !(inCurrent && inHistory)
+        },
+        {
+          name: "add",
+          textContent: "+",
+          check: (inHistory, inCurrent) => inCurrent || inHistory
+        },
+        {
+          name: "subtract",
+          textContent: "-",
+          check: (inHistory, inCurrent) => inCurrent && !inHistory
+        },
+      ];
 
-      addButton.addEventListener("mouseenter", () => {
-        this.showPreview(getAddSelection());
-        this.isPreviewing = true;
-      }, false);
-
-      addButton.addEventListener("mouseleave", () => {
-        this.hidePreview();
-        this.isPreviewing = false;
-      }, false);
-
-
-      // Subtract
-      // -----------------------------------------------------------------------
-      const subtractButton = document.createElement("div");
-      subtractButton.classList.add("button");
-      subtractButton.classList.add("subtract");
-      subtractButton.textContent = "-";
-      buttons.appendChild(subtractButton);
-
-      const getSubSelection = (): HistoryItem => {
+      const getSelection = (test: SelectionCheck): HistoryItem => {
         const currentStateEntries = Array.from(this.history[0].entries());
-        const subtractedState: HistoryItem = new Map(currentStateEntries.map(([view, selected]) => {
-          return <HistoryPair>[view, selected && !historyItem.get(view)];
+        return new Map(currentStateEntries.map(([view, inCurrent]) => {
+          const inHistory = historyItem.has(view) && historyItem.get(view)!;
+          const isSelected = test(inHistory, inCurrent)
+          return <HistoryPair>[view, isSelected];
         }));
-        return subtractedState;
       };
 
-      subtractButton.addEventListener("click", () => {
-        const subSelection = getSubSelection();
-        subSelection.forEach((selected, view) => view.selected = selected);
-        this.parentEl.classList.remove("previewing");
-      }, false);
+      buttonDefs.forEach(buttonDef => {
+        const button = document.createElement("div");
+        button.classList.add("button");
+        button.classList.add(buttonDef.name);
+        button.textContent = buttonDef.textContent;
+        buttons.appendChild(button);
 
-      subtractButton.addEventListener("mouseenter", () => {
-        this.showPreview(getSubSelection());
-        this.isPreviewing = true;
-      }, false);
+        button.addEventListener("click", () => {
+          const selection = getSelection(buttonDef.check);
+          selection.forEach((selected, view) => view.selected = selected);
+          this.addToHistory(selection);
+          this.parentEl.classList.remove("previewing");
+        }, false);
 
-      subtractButton.addEventListener("mouseleave", () => {
-        this.hidePreview();
-        this.isPreviewing = false;
-      }, false);
+        button.addEventListener("mouseenter", () => {
+          const selection = getSelection(buttonDef.check);
+          this.showPreview(selection);
+          this.isPreviewing = true;
+        }, false);
 
-
-      // Invert
-      // -----------------------------------------------------------------------
-
-      const invertButton = document.createElement("div");
-      invertButton.classList.add("button");
-      invertButton.classList.add("subtract");
-      invertButton.textContent = "I";
-      buttons.appendChild(invertButton);
-
-      const getInvertSelection = (): HistoryItem => {
-        const currentStateEntries = Array.from(this.history[0].entries());
-        const invertState: HistoryItem = new Map(currentStateEntries.map(([view, selected]) => {
-
-          return <HistoryPair>[view, historyItem.get(view) && !selected];
-        }));
-        return invertState;
-
-      };
-
-      invertButton.addEventListener("click", () => {
-        const invertSelection = getInvertSelection();
-        invertSelection.forEach((selected, view) => view.selected = selected);
-        this.parentEl.classList.remove("previewing");
-      }, false);
-
-      invertButton.addEventListener("mouseenter", () => {
-        this.showPreview(getInvertSelection());
-        this.isPreviewing = true;
-      }, false);
-
-      invertButton.addEventListener("mouseleave", () => {
-        this.hidePreview();
-        this.isPreviewing = false;
-      }, false);
-
+        button.addEventListener("mouseleave", () => {
+          this.hidePreview();
+          this.isPreviewing = false;
+        }, false);
+      });
     });
   }
 }
