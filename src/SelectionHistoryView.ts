@@ -166,11 +166,12 @@ export class SelectionHistoryView {
         }));
       };
 
-      buttonDefs.forEach(buttonDef => {
+      buttonDefs.forEach((buttonDef, _i, array) => {
         const button = document.createElement("div");
         button.classList.add("button");
         button.classList.add(buttonDef.name);
         button.textContent = buttonDef.textContent;
+        button.style.height = `${100 / array.length}%`;
         buttons.appendChild(button);
 
         button.addEventListener("click", () => {
