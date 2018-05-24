@@ -57,7 +57,7 @@ export class SelectionView {
     parent.appendChild(this.el);
 
     this.onMouseDown = this.onMouseDown.bind(this);
-    this.parent.addEventListener("mousedown", this.onMouseDown, false);
+    document.addEventListener("mousedown", this.onMouseDown, false);
 
     this.onMouseMove = this.onMouseMove.bind(this);
     document.addEventListener("mousemove", this.onMouseMove, false);
