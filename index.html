@@ -48,6 +48,7 @@
       top: 0;
       background: rgb(43, 156, 212);
       opacity: 0.3;
+      border: 1px black solid;
     }
 
     .selectable.hover {
@@ -58,16 +59,18 @@
       opacity: 0.9;
     }
 
-    .previewing .selectable.preview {
-      border: 4px rgb(43, 156, 212) solid;
+    .previewing .selectable {
+      background: white;
     }
 
-    .previewing .selectable.selected {
-      background: white;
+    .previewing .selectable.preview {
+      background: rgb(43, 156, 212);
+      opacity: 0.9;
     }
 
     .selectionHistory {
       position: absolute;
+      height: 90%;
       width: 20%;
       left: 75%;
       top: 0;
@@ -91,12 +94,17 @@
       top: 5px;
     }
 
+    .history-item .selectable {
+      opacity: 0.1;
+    }
+
     .history-item .selectable.selected {
-      opacity: 0.25;
+      opacity: 0.6;
+      border: 1px black solid;
     }
 
     .history-item:hover .selectable.selected {
-      opacity: 0.8;
+      opacity: 0.9;
     }
 
 

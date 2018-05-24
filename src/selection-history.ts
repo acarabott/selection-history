@@ -11,23 +11,29 @@ container.classList.add("container");
 document.body.appendChild(container);
 
 const numTracks = 4;
-Array.from(Array(numTracks)).forEach(() => {
+Array.from(Array(numTracks)).forEach((_, t) => {
   const track = document.createElement("div");
   track.classList.add("track");
   container.appendChild(track);
 
   const addSelectableView = (xPct: number) => {
     const x = `${xPct}%`;
-    const y = "0%";
+    const heightPct = 100 / numTracks;
+    const yPct = t * heightPct;
+    const y = `${yPct}%`;
     const maxWidth = 100 - xPct;
     const widthPct = Math.min(randomInt(5, 20), maxWidth);
     const width = `${widthPct}%`;
-    const height = "100%";
-    new SelectableView(track, x, y, width, height);
+    const height = `${heightPct}%`;
+    new SelectableView(container, x, y, width, height);
 
     const margin = randomInt(0, 25);
     const right = xPct + widthPct + margin;
-    if (right < 95) {
+
+    const trackFullThresh = 95;
+    const finished = right > trackFullThresh;
+
+    if (!finished) {
       addSelectableView(right);
     }
   };
@@ -58,5 +64,5 @@ selectionView.selectionStateObs.subscribe((selectables: SelectableView[]) => {
 });
 
 // TODO touch support (shift key)
-// TODO better item placement (video editing? )
 // TODO button icons
+// TODO delete button?
