@@ -10,12 +10,31 @@ const container = document.createElement("div");
 container.classList.add("container");
 document.body.appendChild(container);
 
-Array.from(Array(5)).forEach(() => {
-  const x = `${randomInt(20, 80)}%`;
-  const y = `${randomInt(20, 80)}%`;
-  const length = `${randomInt(10, 20)}%`;
-  new SelectableView(container, x, y, length, length);
+const numTracks = 4;
+Array.from(Array(numTracks)).forEach(() => {
+  const track = document.createElement("div");
+  track.classList.add("track");
+  container.appendChild(track);
+
+  const addSelectableView = (xPct: number) => {
+    const x = `${xPct}%`;
+    const y = "0%";
+    const maxWidth = 100 - xPct;
+    const widthPct = Math.min(randomInt(5, 20), maxWidth);
+    const width = `${widthPct}%`;
+    const height = "100%";
+    new SelectableView(track, x, y, width, height);
+
+    const margin = randomInt(0, 25);
+    const right = xPct + widthPct + margin;
+    if (right < 95) {
+      addSelectableView(right);
+    }
+  };
+
+  addSelectableView(0);
 });
+
 
 const selectionHistory = new SelectionHistoryView(container);
 
@@ -38,7 +57,6 @@ selectionView.selectionStateObs.subscribe((selectables: SelectableView[]) => {
   selectionHistory.currentSelection = selectables;
 });
 
-// TODO final button types
 // TODO touch support (shift key)
 // TODO better item placement (video editing? )
 // TODO button icons
