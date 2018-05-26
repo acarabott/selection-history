@@ -56,26 +56,16 @@ export class SelectionView {
 
     parent.appendChild(this.el);
 
-    this.onMouseDown = this.onMouseDown.bind(this);
-    document.addEventListener("mousedown", this.onMouseDown, false);
+    document.addEventListener("mousedown", evt => this.onMouseDown(evt), false);
+    document.addEventListener("mousemove", evt => this.onMouseMove(evt), false);
+    document.addEventListener("mouseup",   evt => this.onMouseUp(evt), false);
 
-    this.onMouseMove = this.onMouseMove.bind(this);
-    document.addEventListener("mousemove", this.onMouseMove, false);
+    document.addEventListener("touchstart", evt => this.onTouchStart(evt), false);
+    document.addEventListener("touchmove",  evt => this.onTouchMove(evt), false);
+    document.addEventListener("touchend",   evt => this.onTouchEnd(evt), false);
 
-    this.onMouseUp = this.onMouseUp.bind(this);
-    document.addEventListener("mouseup", this.onMouseUp, false);
-
-    this.onTouchStart = this.onTouchStart.bind(this);
-    document.addEventListener("touchstart", this.onTouchStart, false);
-
-    document.addEventListener("touchmove", (e) => this.onTouchMove(e), false);
-    document.addEventListener("touchend", (e) => this.onTouchEnd(e), false);
-
-    this.onKeyDown = this.onKeyDown.bind(this);
-    document.addEventListener("keydown", this.onKeyDown, false);
-
-    this.onKeyUp = this.onKeyUp.bind(this);
-    document.addEventListener("keyup", this.onKeyUp, false);
+    document.addEventListener("keydown", evt => this.onKeyDown(evt), false);
+    document.addEventListener("keyup",   evt => this.onKeyUp(evt), false);
   }
 
   get isDragSelecting() { return this._isDragSelecting; }
