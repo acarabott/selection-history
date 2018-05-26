@@ -18,7 +18,7 @@ export class SelectionHistoryView {
 
   constructor() {
     this.el = document.createElement("div");
-    this.el.classList.add("selectionHistory");
+    this.el.classList.add("selection-history");
 
     this.currentSelectionObs = new Obs(<SelectableView[]>[]);
     this.historyObs = new Obs(<HistoryItem[]>[]);
