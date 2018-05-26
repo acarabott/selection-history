@@ -33,7 +33,7 @@ export class SelectionView {
   protected clickPoint: IPoint;
   protected combining: boolean;
   protected _isDragSelecting!: boolean;
-  protected clickedTarget: HTMLElement | undefined;
+  protected touchedTarget: HTMLElement | undefined;
 
 
   constructor(parent: HTMLElement) {
@@ -65,7 +65,9 @@ export class SelectionView {
     this.onMouseUp = this.onMouseUp.bind(this);
     document.addEventListener("mouseup", this.onMouseUp, false);
 
-    document.addEventListener("touchstart", (e) => this.onTouchStart(e), false);
+    this.onTouchStart = this.onTouchStart.bind(this);
+    document.addEventListener("touchstart", this.onTouchStart, false);
+
     document.addEventListener("touchmove", (e) => this.onTouchMove(e), false);
     document.addEventListener("touchend", (e) => this.onTouchEnd(e), false);
 
@@ -134,7 +136,7 @@ export class SelectionView {
   }
 
   onMouseDown(event: MouseEvent) {
-    this.clickedTarget = event.target as HTMLElement;
+    this.touchedTarget = event.target as HTMLElement;
     this.updateInputPoints(event);
     this.onPointerDown();
   }
@@ -156,6 +158,7 @@ export class SelectionView {
   }
 
   onTouchStart(event: TouchEvent) {
+    this.touchedTarget = event.target as HTMLElement;
     this.updateTouchInputPoints(event);
     this.onPointerDown();
   }
@@ -176,9 +179,9 @@ export class SelectionView {
     }));
 
 
-    const selectable = this.clickedTarget === undefined
+    const selectable = this.touchedTarget === undefined
       ? undefined
-      : SelectableView.getFromEl(this.clickedTarget);
+      : SelectableView.getFromEl(this.touchedTarget);
     const didClickSelectable = selectable instanceof SelectableView;
 
     if (this.combining) {
@@ -244,6 +247,7 @@ export class SelectionView {
 
   onPointerMove() {
     if (this.isDragSelecting) {
+      if (this.el.style.display !== "block") { this.el.style.display = "block"; }
       this.updateSelection();
     }
     else {
@@ -261,5 +265,6 @@ export class SelectionView {
   onPointerUp() {
     this.isDragSelecting = false;
     this.selectionState = SelectableView.all;
+    this.el.style.display = "none";
   }
 }
