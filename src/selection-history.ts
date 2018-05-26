@@ -58,7 +58,7 @@ window.addEventListener("resize", onResize, false);
 onResize();
 
 
-const selectionView = new SelectionView(container);
+const selectionView = new SelectionView();
 selectionView.selectionStateObs.subscribe((selectables: SelectableView[]) => {
   selectionHistory.currentSelection = selectables;
 });

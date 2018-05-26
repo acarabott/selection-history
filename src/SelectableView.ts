@@ -16,7 +16,6 @@ export class SelectableView {
 
   protected el: HTMLElement;
   protected selectedObs: Obs;
-  protected hoverObs: Obs;
 
   constructor(parent: HTMLElement, x: string, y: string, width: string, height: string) {
     this.el = document.createElement("div");
@@ -28,7 +27,6 @@ export class SelectableView {
     this.el.style.height = height.toString();
 
     this.selectedObs = new Obs(false);
-    this.hoverObs = new Obs(false);
 
     parent.appendChild(this.el);
 
@@ -46,14 +44,6 @@ export class SelectableView {
     this.updateSelectedClass();
   }
 
-  get hover() { return this.hoverObs.value; }
-  set hover(hover) {
-    this.hoverObs.value = hover;
-    hover ? this.el.classList.add("hover")
-          : this.el.classList.remove("hover");
-
-  }
-
   get preview() { return this.el.classList.contains("preview"); }
   set preview(preview) {
     preview ? this.el.classList.add("preview")
@@ -63,9 +53,9 @@ export class SelectableView {
   get rect() : IRect {
     const clientRect = this.el.getBoundingClientRect();
     return {
-      x: clientRect.left,
-      y: clientRect.top,
-      width: clientRect.width,
+      x:      clientRect.left,
+      y:      clientRect.top,
+      width:  clientRect.width,
       height: clientRect.height
     };
   }

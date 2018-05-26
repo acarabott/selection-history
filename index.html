@@ -47,11 +47,15 @@
       left: 0;
       top: 0;
       background: rgb(43, 156, 212);
-      opacity: 0.3;
       border: 1px black solid;
     }
 
-    .selectable.hover {
+    .selectable,
+    .isDragSelecting .selectable:hover {
+      opacity: 0.3;
+    }
+
+    .selectable:hover {
       opacity: 0.7;
     }
 
@@ -164,9 +168,10 @@
       position: absolute;
       border: 1px black dashed;
       display: none;
+      pointer-events: none;
     }
 
-    .drag-selection.isDragSelecting {
+    .isDragSelecting .drag-selection {
       display: block;
     }
   </style>
