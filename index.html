@@ -22,21 +22,39 @@
       user-select: none;          /* Likely future */
     }
 
-    .container,
-    .selectionHistory {
-      margin: 2.5%;
-      border: 1px black solid;
+    #left, #right {
+      position: absolute;
+      top: 0;
+      height: 100vh;
+    }
+
+    #left {
+      left: 0;
+      width: 70vw;
+    }
+
+    :root {
+      --history-width: 25vw;  /* width and height must match */
+      --history-height: 25vh;
+      --button-width: 5vw;
+      --preview-width: calc(var(--history-width) - var(--button-width));
+    }
+
+    #right {
+      left: 70vw;
+      width: var(--history-width);
     }
 
     .container {
       position: relative;
-      width: 65%;
+      width: 60vw;
+      /*height: 60vh;*/ /* set in JS */
+      margin: 2.5% 5vw;
     }
 
     .track {
       position: relative;
       width: 100%;
-      height: 100px; /* updated in js */
       border: 1px black solid;
     }
 
@@ -48,10 +66,11 @@
       top: 0;
       background: rgb(43, 156, 212);
       border: 1px black solid;
+      opacity: 0.3;
     }
 
     .selectable,
-    .isDragSelecting .selectable:hover {
+    .isCombining .selectable:hover {
       opacity: 0.3;
     }
 
@@ -59,11 +78,12 @@
       opacity: 0.7;
     }
 
-    .selectable.selected {
+    .selectable.selected,
+    .isCombining .selectable.selected {
       opacity: 0.9;
     }
 
-    .previewing .selectable {
+    .previewing .container .selectable {
       background: white;
     }
 
@@ -73,10 +93,10 @@
     }
 
     .selectionHistory {
-      position: absolute;
+      width: 100%;
       height: 90%;
-      width: 20%;
-      left: 75%;
+      position: absolute;
+      border: 1px black solid;
       top: 0;
       overflow: scroll;
     }
@@ -84,8 +104,9 @@
     .history-item {
       display: block;
       position: relative;
-      width: 100%;
       border-bottom: 1px black solid;
+      height: var(--history-height);
+      width: var(--history-width);
     }
 
     .history-item .button {
@@ -111,24 +132,23 @@
       opacity: 0.9;
     }
 
-
-    :root {
-      --button-width: 20%;
-    }
-
     .history-item .preview-view {
       position: relative;
       display: inline-block;
-      width: calc(100% - var(--button-width));
-      height: 100%;
       border-right: 1px black solid;
+      height: var(--history-height);
+      width: var(--preview-width);
+    }
+
+    .preview-view .selectable {
+      height: 5vh;
     }
 
     .history-item .buttons {
       position: absolute;
       width: var(--button-width);
       height: 100%;
-      left: calc(100% - var(--button-width));
+      left: var(--preview-width);
       top: 0;
     }
 
@@ -165,8 +185,14 @@
     }
 
     .drag-selection {
+      transform-origin: top left;
+      will-change: transform;
+
+      width: 1px;
+      height: 1px;
       position: absolute;
-      border: 1px black dashed;
+      background: rgb(212, 100, 100);
+      opacity: 0.5;
       display: none;
       pointer-events: none;
     }

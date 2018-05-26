@@ -1,4 +1,4 @@
-import { Obs, observable } from "./Obs";
+import { Obs } from "./Obs";
 import { SelectableView } from "./SelectableView";
 
 interface IPoint {
@@ -20,47 +20,68 @@ interface IPointerEvent {
 
 export class SelectionView {
   public el: HTMLElement;
-  @observable
-  public selectionState!: SelectableView[];
-  public selectionStateObs!: Obs;
 
+  public selectionStateObs: Obs<SelectableView[]>;
+
+  protected parentEl: HTMLElement;
+  protected parentRectCached: IRect;
+  protected parentRectCacheValid: boolean;
   protected previousSelectionState: Map<SelectableView, boolean>;
   protected inputPointClient: IPoint;
-  protected _tl!: IPoint;
-  protected _br!: IPoint;
+  protected _tl: IPoint;
+  protected _br: IPoint;
   protected clickPoint: IPoint;
-  protected combining: boolean;
+  protected _combining!: boolean;
   protected isPointerDown: boolean;
   protected _isDragSelecting!: boolean;
   protected touchedTarget: HTMLElement | undefined;
 
+  constructor(parentEl: HTMLElement) {
+    this.parentEl = parentEl;
+    this.parentRectCached = { x: 0, y: 0, width: 0, height: 0 };
+    this.parentRectCacheValid = false;
 
-  constructor() {
+    window.addEventListener("resize", () => {
+      this.parentRectCacheValid = false;
+    }, false);
+
     this.el = document.createElement("div");
     this.el.classList.add("drag-selection");
     document.body.appendChild(this.el);
 
+    this.selectionStateObs = new Obs(<SelectableView[]>[]);
     this.isPointerDown = false;
     this.clickPoint = { x: 0, y: 0 };
 
     this.previousSelectionState = new Map();
-    this.tl = { x: 0, y: 0 };
-    this.br = { x: 100, y: 100 };
+
+    this._tl = { x: 0, y: 0 };
+    this._br = { x: 100, y: 100 };
     this.isDragSelecting = false;
     this.inputPointClient = { x: 0, y: 0 };
-    this.combining = false;
+    this.isCombining = false;
 
 
-    document.addEventListener("mousedown", evt => this.onMouseDown(evt), false);
+    parentEl.addEventListener("mousedown", evt => this.onMouseDown(evt), false);
     document.addEventListener("mousemove", evt => this.onMouseMove(evt), false);
     document.addEventListener("mouseup",   evt => this.onMouseUp(evt), false);
 
-    document.addEventListener("touchstart", evt => this.onTouchStart(evt), false);
+    parentEl.addEventListener("touchstart", evt => this.onTouchStart(evt), false);
     document.addEventListener("touchmove",  evt => this.onTouchMove(evt), false);
     document.addEventListener("touchend",   evt => this.onTouchEnd(evt), false);
 
     document.addEventListener("keydown", evt => this.onKeyDown(evt), false);
     document.addEventListener("keyup",   evt => this.onKeyUp(evt), false);
+  }
+
+  get selectionState() { return this.selectionStateObs.value; }
+  set selectionState(selectionState) { this.selectionStateObs.value = selectionState; }
+
+  get isCombining() { return this._combining;}
+  set isCombining(isCombining) {
+    this._combining = isCombining;
+    this.isCombining ? document.body.classList.add("isCombining")
+                     : document.body.classList.remove("isCombining");
   }
 
   get isDragSelecting() { return this._isDragSelecting; }
@@ -70,23 +91,48 @@ export class SelectionView {
                     : document.body.classList.remove("isDragSelecting");
   }
 
+  updateTransform() {
+    const translate = `translate3d(${this.tl.x}px, ${this.tl.y}px, 0)`;
+
+    const width = this.br.x - this.tl.x;
+    const height = this.br.y - this.tl.y;
+    const scale = `scale3d(${width}, ${height}, 1)`;
+
+    this.el.style.transform = `${translate} ${scale}`;
+  }
+
   get tl() { return this._tl; }
   set tl(tl) {
     this._tl = tl;
-    this.el.style.left = `${tl.x}px`;
-    this.el.style.top = `${tl.y}px`;
+    this.updateTransform();
+  }
+
+  get parentRect() {
+    if (!this.parentRectCacheValid) {
+      const parentRect = this.parentEl.getBoundingClientRect();
+      this.parentRectCached = {
+        x: parentRect.left,
+        y: parentRect.top,
+        width: parentRect.width,
+        height: parentRect.height
+      };
+      this.parentRectCacheValid = true;
+    }
+    return this.parentRectCached;
   }
 
   get br() { return this._br; }
   set br(br) {
-    this._br = br;
-    this.el.style.width = `${br.x - this.tl.x}px`;
-    this.el.style.height = `${br.y - this.tl.y}px`;
+    this._br = {
+      x: Math.min(br.x, this.parentRect.x + this.parentRect.width),
+      y: br.y
+    };
+    this.updateTransform();
   }
 
   onKeyDown(event: KeyboardEvent) {
     if (["ShiftLeft", "ShiftRight"].includes(event.code)) {
-      this.combining = true;
+      this.isCombining = true;
       if (this.isDragSelecting) {
         this.updateSelection();
       }
@@ -95,7 +141,7 @@ export class SelectionView {
 
   onKeyUp(event: KeyboardEvent) {
     if (["ShiftLeft", "ShiftRight"].includes(event.code) && !event.shiftKey) {
-      this.combining = false;
+      this.isCombining = false;
       if (this.isDragSelecting) {
         this.updateSelection();
       }
@@ -159,7 +205,7 @@ export class SelectionView {
       : SelectableView.getFromEl(this.touchedTarget);
     const didClickSelectable = selectable instanceof SelectableView;
 
-    if (this.combining) {
+    if (this.isCombining) {
       if (didClickSelectable) {
         selectable!.selected = !selectable!.selected
       }
@@ -178,10 +224,10 @@ export class SelectionView {
   }
 
   overlapsRect(rect: IRect) {
-    return this.br.x > rect.x &&
-           this.tl.x < rect.x + rect.width &&
-           this.br.y > rect.y &&
-           this.tl.y < rect.y + rect.height;
+    return this.tl.x < rect.x + rect.width &&
+           this.br.x > rect.x &&
+           this.tl.y < rect.y + rect.height &&
+           this.br.y > rect.y;
   }
 
   updateSelection() {
@@ -197,9 +243,11 @@ export class SelectionView {
 
     SelectableView.all.forEach(view => {
       const isOverlapping = this.overlapsRect(view.rect);
-      const wasSelected = this.previousSelectionState.get(view);
+      const wasSelected = this.previousSelectionState.has(view)
+        ? this.previousSelectionState.get(view)!
+        : false;
 
-      view.selected = this.combining
+      view.selected = this.isCombining
         ? isOverlapping
           ? !wasSelected
           : wasSelected

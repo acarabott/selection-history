@@ -6,14 +6,26 @@ function randomInt(min: number, max: number) {
   return Math.floor(min + (Math.random() * (max - min)));
 }
 
+const leftSide = document.createElement("div");
+leftSide.id = "left";
+document.body.appendChild(leftSide);
+
+const rightSide = document.createElement("div");
+rightSide.id = "right";
+document.body.appendChild(rightSide);
+
 const container = document.createElement("div");
 container.classList.add("container");
-document.body.appendChild(container);
+leftSide.appendChild(container);
 
 const numTracks = 4;
+const containerHeightVH = 60;
 Array.from(Array(numTracks)).forEach((_, t) => {
+  const trackHeightVH = containerHeightVH / numTracks;
+
   const track = document.createElement("div");
   track.classList.add("track");
+  track.style.height = `${trackHeightVH}vh`;
   container.appendChild(track);
 
   const addSelectableView = (xPct: number) => {
@@ -41,27 +53,15 @@ Array.from(Array(numTracks)).forEach((_, t) => {
   addSelectableView(0);
 });
 
-
-const selectionHistory = new SelectionHistoryView(container);
-
-document.body.appendChild(selectionHistory.el);
-
-const onResize = () => {
-  const containerRect = container.getBoundingClientRect();
-  const heightToWidthRatio = containerRect.height / containerRect.width;
-
-  const historyRect = selectionHistory.el.getBoundingClientRect();
-  selectionHistory.historyItemHeight = historyRect.width * heightToWidthRatio;
-};
-
-window.addEventListener("resize", onResize, false);
-onResize();
-
-
-const selectionView = new SelectionView();
+const selectionView = new SelectionView(leftSide);
 selectionView.selectionStateObs.subscribe((selectables: SelectableView[]) => {
   selectionHistory.currentSelection = selectables;
 });
+
+
+
+const selectionHistory = new SelectionHistoryView();
+rightSide.appendChild(selectionHistory.el);
 
 // TODO touch support (shift key)
 // TODO button icons

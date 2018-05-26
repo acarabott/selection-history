@@ -1,5 +1,3 @@
-import { Obs } from "./Obs";
-
 interface IRect {
   x: number;
   y: number;
@@ -14,8 +12,14 @@ export class SelectableView {
   static add(selectable: SelectableView) { selectables.set(selectable.el, selectable); }
   static getFromEl(el: HTMLElement) : SelectableView | undefined { return selectables.get(el); }
 
+  static invalidateRectCache() {
+    SelectableView.all.forEach(view => view.cacheValid = false);
+  }
+
   protected el: HTMLElement;
-  protected selectedObs: Obs;
+  protected _selected: boolean;
+  protected cacheValid: boolean;
+  protected cachedRect: IRect;
 
   constructor(parent: HTMLElement, x: string, y: string, width: string, height: string) {
     this.el = document.createElement("div");
@@ -26,7 +30,9 @@ export class SelectableView {
     this.el.style.width = width.toString();
     this.el.style.height = height.toString();
 
-    this.selectedObs = new Obs(false);
+    this._selected = false;
+    this.cacheValid = false;
+    this.cachedRect = { x: 0, y: 0, width: 0, height: 0 };
 
     parent.appendChild(this.el);
 
@@ -38,9 +44,9 @@ export class SelectableView {
                   : this.el.classList.remove("selected");
   }
 
-  get selected() { return this.selectedObs.value; }
-  set selected(selected) {
-    this.selectedObs.value = selected;
+  public get selected() { return this._selected; }
+  public set selected(selected) {
+    this._selected = selected;
     this.updateSelectedClass();
   }
 
@@ -51,19 +57,22 @@ export class SelectableView {
   }
 
   get rect() : IRect {
-    const clientRect = this.el.getBoundingClientRect();
-    return {
-      x:      clientRect.left,
-      y:      clientRect.top,
-      width:  clientRect.width,
-      height: clientRect.height
-    };
-  }
-
-  setSelectedWithoutNotify(value: any) {
-    this.selectedObs.setValueWithoutNotify(value);
-    this.updateSelectedClass();
+    if (!this.cacheValid) {
+      const clientRect = this.el.getBoundingClientRect();
+      this.cachedRect = {
+        x:      clientRect.left,
+        y:      clientRect.top,
+        width:  clientRect.width,
+        height: clientRect.height
+      };
+      this.cacheValid = true;
+    }
+    return this.cachedRect;
   }
 
   cloneEl() { return this.el.cloneNode() as HTMLElement; }
 }
+
+window.addEventListener("resize", () => {
+  SelectableView.invalidateRectCache();
+}, false);

@@ -1,9 +1,9 @@
 export type subscription = ((value: any) => void);
 
-export class Obs {
-  protected _value: any;
-  protected subscriptions: subscription[];
-  constructor(value?: any) {
+export class Obs<T> {
+  protected _value: T;
+  protected subscriptions: ((value: T) => void)[];
+  constructor(value: T) {
     this._value = value;
     this.subscriptions = [];
   }
@@ -27,16 +27,4 @@ export class Obs {
   notify() {
     this.subscriptions.forEach(subscription => subscription(this.value));
   }
-}
-
-export function observable(obj: {}, key: string) {
-  const obs = new Obs();
-  Object.defineProperty(obj, `${key}Obs`, {
-    get() { return obs; }
-  });
-
-  Object.defineProperty(obj, key, {
-    get()      { return obs.value;  },
-    set(value) { obs.value = value; }
-  });
 }

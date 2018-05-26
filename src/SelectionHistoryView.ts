@@ -1,4 +1,4 @@
-import { Obs, observable } from "./Obs";
+import { Obs } from "./Obs";
 import { SelectableView } from "./SelectableView";
 
 type HistoryItem = Map<SelectableView, boolean>;
@@ -7,26 +7,17 @@ type HistoryPair = [SelectableView, boolean];
 export class SelectionHistoryView {
   public  el: HTMLElement;
 
-  @observable
-  public currentSelection: SelectableView[];
-
-  protected parentEl: HTMLElement;
-  protected _historyItemHeight: number;
-  protected currentSelectionObs!: Obs;
-  @observable
-  protected history!: HistoryItem[];
-  protected historyObs!: Obs;
+  protected currentSelectionObs: Obs<SelectableView[]>;
+  protected historyObs: Obs<HistoryItem[]>;
   protected _isPreviewing!: boolean;
   protected canPreview: boolean;
 
-  constructor(parentEl: HTMLElement) {
+  constructor() {
     this.el = document.createElement("div");
     this.el.classList.add("selectionHistory");
 
-    this.parentEl = parentEl;
-    this._historyItemHeight = 50;
-    this.currentSelection = [];
-    this.history = [];
+    this.currentSelectionObs = new Obs(<SelectableView[]>[]);
+    this.historyObs = new Obs(<HistoryItem[]>[]);
     this.canPreview = true;
 
 
@@ -39,20 +30,18 @@ export class SelectionHistoryView {
     this.historyObs.subscribe(() => this.render());
   }
 
-  get historyItemHeight() { return this._historyItemHeight; }
-  set historyItemHeight(height: number) {
-    this._historyItemHeight = height;
-    Array.from(this.el.children).forEach(el => {
-      (el as HTMLElement).style.height = `${height}px`;
-    });
-  }
+  get currentSelection() { return this.currentSelectionObs.value; }
+  set currentSelection(currentSelection) { this.currentSelectionObs.value = currentSelection; }
+
+  get history() { return this.historyObs.value; }
+  set history(history) { this.historyObs.value = history; }
 
   get isPreviewing() { return this._isPreviewing; }
   set isPreviewing(isPreviewing) {
     this._isPreviewing = isPreviewing;
     isPreviewing
-      ? this.parentEl.classList.add("previewing")
-      : this.parentEl.classList.remove("previewing");
+      ? document.body.classList.add("previewing")
+      : document.body.classList.remove("previewing");
   }
 
   addToHistory(item: HistoryItem) {
@@ -109,7 +98,7 @@ export class SelectionHistoryView {
           const selection = getSelection(check);
           selection.forEach((selected, view) => view.selected = selected);
           this.addToHistory(selection);
-          this.parentEl.classList.remove("previewing");
+          document.body.classList.remove("previewing");
         }, false);
 
         button.addEventListener("mouseenter", () => {
@@ -132,12 +121,14 @@ export class SelectionHistoryView {
       view.classList.add("history-item");
 
       const isFirst = i === 0;
+
+      const historyItemHeightVH = 25;
       if (isFirst) {
-        view.style.marginTop = `${-this.historyItemHeight}px`;
+        view.style.marginTop = `${-historyItemHeightVH}vh`;
         view.classList.add("first");
         view.style.animationDuration = `${animationDurationMs}Ms`;
       }
-      view.style.height = `${this.historyItemHeight}px`;
+      view.style.height = `${historyItemHeightVH}vh`;
 
       this.el.appendChild(view);
 
