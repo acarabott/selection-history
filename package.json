@@ -4,7 +4,7 @@
   "description": "An experiment in GUI selection history",
   "main": "selection-history.js",
   "scripts": {
-    "serve": "webpack-dev-server --mode=development",
+    "serve": "webpack-dev-server --mode=development --hot --host 0.0.0.0",
     "build": "webpack --mode=production"
   },
   "repository": {
