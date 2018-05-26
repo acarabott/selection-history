@@ -76,3 +76,7 @@ export class SelectableView {
 window.addEventListener("resize", () => {
   SelectableView.invalidateRectCache();
 }, false);
+
+window.addEventListener("scroll", () => {
+  SelectableView.invalidateRectCache();
+}, false);

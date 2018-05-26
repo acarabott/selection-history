@@ -15,6 +15,7 @@ export class HistoryItemView {
 
   protected historyItem: HistoryItem;
 
+  protected _label: number;
   protected labelEl: HTMLElement;
 
   protected previewEl: HTMLElement;
@@ -30,13 +31,15 @@ export class HistoryItemView {
     this.el = document.createElement("div");
     this.el.classList.add("history-item");
 
+    this._label = 1;
     this.labelEl = document.createElement("div");
-    this.labelEl.classList.add("history-number");
+    this.labelEl.classList.add("history-label");
     this.el.appendChild(this.labelEl);
 
     this.previewEl = document.createElement("div");
     this.previewEl.classList.add("preview-view");
     this.el.appendChild(this.previewEl);
+    this.addButtonAction(this.previewEl, (inHistory) => inHistory);
 
     this.buttonsEl = document.createElement("div");
     this.buttonsEl.classList.add("buttons");
@@ -105,8 +108,11 @@ export class HistoryItemView {
   };
 
 
-  get label() { return this.labelEl.textContent; }
-  set label(label) { this.labelEl.textContent = label; }
+  get label() { return this._label; }
+  set label(label) {
+    this._label = label;
+    this.labelEl.textContent = `${label}`;
+  }
 
   slideIn(historyItemHeightVH: number, animationDurationMs: number) {
     this.el.style.marginTop = `${-historyItemHeightVH}vh`;

@@ -27,7 +27,7 @@ export class SelectionView {
   protected parentRectCached: IRect;
   protected parentRectCacheValid: boolean;
   protected previousSelectionState: Map<SelectableView, boolean>;
-  protected inputPointClient: IPoint;
+  protected inputPoint: IPoint;
   protected _tl: IPoint;
   protected _br: IPoint;
   protected clickPoint: IPoint;
@@ -58,7 +58,7 @@ export class SelectionView {
     this._tl = { x: 0, y: 0 };
     this._br = { x: 100, y: 100 };
     this.isDragSelecting = false;
-    this.inputPointClient = { x: 0, y: 0 };
+    this.inputPoint = { x: 0, y: 0 };
     this.isCombining = false;
 
 
@@ -149,33 +149,29 @@ export class SelectionView {
   }
 
   getPointFromEvent(event: IPointerEvent) {
-    return { x: event.clientX, y: event.clientY } ;
-  }
-
-  updateInputPoints(event: IPointerEvent) {
-    this.inputPointClient = this.getPointFromEvent(event);
+    return { x: event.clientX, y: event.clientY };
   }
 
   onMouseDown(event: MouseEvent) {
     this.touchedTarget = event.target as HTMLElement;
-    this.updateInputPoints(event);
+    this.inputPoint = this.getPointFromEvent(event);
     this.onPointerDown();
   }
 
   onMouseMove(event: MouseEvent) {
-    this.updateInputPoints(event);
+    this.inputPoint = this.getPointFromEvent(event);
     this.onPointerMove();
   }
 
   onMouseUp(event: MouseEvent) {
-    this.updateInputPoints(event);
+    this.inputPoint = this.getPointFromEvent(event);
     this.onPointerUp();
   }
 
   updateTouchInputPoints(event: TouchEvent) {
     if (event.changedTouches.length === 0) { return; }
     const pointerEvent: IPointerEvent = event.changedTouches[0];
-    this.updateInputPoints(pointerEvent);
+    this.inputPoint = this.getPointFromEvent(pointerEvent);
   }
 
   onTouchStart(event: TouchEvent) {
@@ -218,9 +214,9 @@ export class SelectionView {
       });
     }
 
-    this.tl = this.inputPointClient;
-    this.br = this.inputPointClient;
-    this.clickPoint = this.inputPointClient;
+    this.tl = this.inputPoint;
+    this.br = this.inputPoint;
+    this.clickPoint = this.inputPoint;
   }
 
   overlapsRect(rect: IRect) {
@@ -232,13 +228,13 @@ export class SelectionView {
 
   updateSelection() {
     this.tl = {
-      x: Math.min(this.inputPointClient.x, this.clickPoint.x),
-      y: Math.min(this.inputPointClient.y, this.clickPoint.y)
+      x: Math.min(this.inputPoint.x, this.clickPoint.x),
+      y: Math.min(this.inputPoint.y, this.clickPoint.y)
     };
 
     this.br = {
-      x: Math.max(this.inputPointClient.x, this.clickPoint.x),
-      y: Math.max(this.inputPointClient.y, this.clickPoint.y)
+      x: Math.max(this.inputPoint.x, this.clickPoint.x),
+      y: Math.max(this.inputPoint.y, this.clickPoint.y)
     };
 
     SelectableView.all.forEach(view => {

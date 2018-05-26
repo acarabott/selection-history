@@ -58,10 +58,37 @@ selectionView.selectionStateObs.subscribe((selectables: SelectableView[]) => {
   selectionHistory.currentSelection = selectables;
 });
 
-
-
 const selectionHistory = new SelectionHistoryView();
 rightSide.appendChild(selectionHistory.el);
+
+document.body.addEventListener("touchstart", () => {
+  const scrollTop = document.body.scrollTop;
+
+  if (scrollTop === 0) {
+    document.body.scrollTop = 0;
+    return;
+  }
+
+  const currentScroll = scrollTop + document.body.offsetHeight;
+
+  if (currentScroll === document.body.scrollHeight) {
+    document.body.scrollTop = scrollTop - 1;
+  }
+});
+
+selectionHistory.el.addEventListener("touchmove", event => {
+  event.stopPropagation();
+}, false);
+
+selectionHistory.el.addEventListener("touchend", () => {
+  document.body.scrollTop = 0;
+}, false);
+
+document.body.addEventListener("touchmove", event => {
+  event.preventDefault();
+}, { passive: false });
+
+
 
 // TODO touch support (shift key)
 // TODO button icons

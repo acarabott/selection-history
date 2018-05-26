@@ -14,6 +14,7 @@ export class SelectionHistoryView {
   protected historyObs: Obs<HistoryItem[]>;
   protected _isPreviewing!: boolean;
   protected canPreview: boolean;
+  protected historyItemViews: HistoryItemView[];
 
   constructor() {
     this.el = document.createElement("div");
@@ -22,7 +23,7 @@ export class SelectionHistoryView {
     this.currentSelectionObs = new Obs(<SelectableView[]>[]);
     this.historyObs = new Obs(<HistoryItem[]>[]);
     this.canPreview = true;
-
+    this.historyItemViews = [];
 
     this.currentSelectionObs.subscribe((selectables: SelectableView[]) => {
       this.addToHistory(new Map(selectables.map(selectable => {
@@ -30,7 +31,7 @@ export class SelectionHistoryView {
       })));
     });
 
-    this.historyObs.subscribe(() => this.render());
+    this.historyObs.subscribe(history => this.render(history[0]));
   }
 
   get currentSelection() { return this.currentSelectionObs.value; }
@@ -73,50 +74,48 @@ export class SelectionHistoryView {
     this.currentSelection.forEach(item => item.preview = false);
   }
 
-  render() {
-    Array.from(this.el.children).forEach(child => this.el.removeChild(child));
-
+  render(historyItem: HistoryItem) {
     const animationDurationMs = 250;
     const historyItemHeightVH = 25; // bad! hard coded from CSS
 
-    this.history.forEach((historyItem, i) => {
-      const historyItemView = new HistoryItemView(historyItem);
-      historyItemView.label = (i + 1).toString();
+    const historyItemView = new HistoryItemView(historyItem);
+    this.historyItemViews.push(historyItemView);
+    historyItemView.label = this.historyItemViews.length;
 
-      this.el.appendChild(historyItemView.el);
-      historyItemView.slideIn(historyItemHeightVH, animationDurationMs);
+    this.el.insertBefore(historyItemView.el,
+                         this.el.childNodes[0]);
+    historyItemView.slideIn(historyItemHeightVH, animationDurationMs);
 
-      const getSelection = (test: SelectionCheck): HistoryItem => {
-        const currentStateEntries = Array.from(this.history[0].entries());
-        return new Map(currentStateEntries.map(([view, inCurrent]) => {
-          const inHistory = historyItem.has(view) && historyItem.get(view)!;
-          const isSelected = test(inHistory, inCurrent)
-          return <HistoryPair>[view, isSelected];
-        }));
-      };
+    const getSelection = (test: SelectionCheck): HistoryItem => {
+      const currentStateEntries = Array.from(this.history[0].entries());
+      return new Map(currentStateEntries.map(([view, inCurrent]) => {
+        const inHistory = historyItem.has(view) && historyItem.get(view)!;
+        const isSelected = test(inHistory, inCurrent)
+        return <HistoryPair>[view, isSelected];
+      }));
+    };
 
-      historyItemView.onAnyButtonClick = (check) => {
-        this.canPreview = false;
-        setTimeout(() => this.canPreview = true, animationDurationMs * 1.5);
+    historyItemView.onAnyButtonClick = (check) => {
+      this.canPreview = false;
+      setTimeout(() => this.canPreview = true, animationDurationMs * 1.5);
 
-        const selection = getSelection(check);
-        selection.forEach((selected, view) => view.selected = selected);
-        this.addToHistory(selection);
-        document.body.classList.remove("previewing");
-      };
+      const selection = getSelection(check);
+      selection.forEach((selected, view) => view.selected = selected);
+      this.addToHistory(selection);
+      document.body.classList.remove("previewing");
+    };
 
-      historyItemView.onAnyButtonEnter = (check) => {
-        const selection = getSelection(check);
-        if (this.canPreview) {
-          this.showPreview(selection);
-          this.isPreviewing = true;
-        }
-      };
+    historyItemView.onAnyButtonEnter = (check) => {
+      const selection = getSelection(check);
+      if (this.canPreview) {
+        this.showPreview(selection);
+        this.isPreviewing = true;
+      }
+    };
 
-      historyItemView.onAnyButtonLeave = () => {
-        this.hidePreview();
-        this.isPreviewing = false;
-      };
-    });
+    historyItemView.onAnyButtonLeave = () => {
+      this.hidePreview();
+      this.isPreviewing = false;
+    };
   }
 }

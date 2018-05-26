@@ -25,7 +25,8 @@
     #left, #right {
       position: absolute;
       top: 0;
-      height: 100vh;
+      height: 90vh;
+      overflow: hidden;
     }
 
     #left {
@@ -36,6 +37,7 @@
     :root {
       --history-width: 25vw;  /* width and height must match */
       --history-height: 25vh;
+      --label-top: calc(6.25vh);
       --button-width: 5vw;
       --preview-width: calc(var(--history-width) - var(--button-width));
     }
@@ -49,7 +51,11 @@
       position: relative;
       width: 60vw;
       /*height: 60vh;*/ /* set in JS */
-      margin: 2.5% 5vw;
+      margin-left: 5vw;
+    }
+
+    .container, .selectionHistory {
+      margin-top: 2.5vh;
     }
 
     .track {
@@ -113,10 +119,14 @@
       cursor: pointer;
     }
 
-    .history-number {
+    .history-label {
+      display: flex;
+      align-items: center;
       position: absolute;
-      left: 5px;
-      top: 5px;
+      left: 0.75vw;
+      top: 0;
+      height: 6.25vh;
+      z-index: 20;
     }
 
     .history-item .selectable {
@@ -138,6 +148,7 @@
       border-right: 1px black solid;
       height: var(--history-height);
       width: var(--preview-width);
+      z-index: 0;
     }
 
     .preview-view .selectable {
