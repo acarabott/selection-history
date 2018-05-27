@@ -76,11 +76,11 @@ document.body.addEventListener("touchstart", () => {
   if (currentScroll === document.body.scrollHeight) {
     document.body.scrollTop = scrollTop - 1;
   }
-});
+}, { passive: true, capture: false });
 
 selectionHistory.el.addEventListener("touchmove", event => {
   event.stopPropagation();
-}, false);
+}, { passive: true, capture: false });
 
 selectionHistory.el.addEventListener("touchend", () => {
   document.body.scrollTop = 0;
@@ -88,4 +88,4 @@ selectionHistory.el.addEventListener("touchend", () => {
 
 document.body.addEventListener("touchmove", event => {
   event.preventDefault();
-}, { passive: false });
+}, { passive: false, capture: false });

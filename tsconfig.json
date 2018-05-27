@@ -1,6 +1,6 @@
 {
   "files": [
-    "src/selection-history.ts"
+    "src/scripts/selection-history.ts"
   ],
   "compilerOptions": {
     "allowJs": false,

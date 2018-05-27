@@ -144,7 +144,7 @@ export class HistoryItemView {
           : this.onAnyButtonEnter(check);
 
         this.previewStates.set(button, !isPreviewing);
-      }, false);
+      }, { passive: true, capture: false });
     }
   };
 

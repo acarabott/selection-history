@@ -7,24 +7,27 @@ module.exports = {
   resolve: {
     extensions: [".ts", ".js"]
   },
-  entry: "./src/selection-history.ts",
+  entry: "./src/scripts/selection-history.ts",
   plugins: [
     new HtmlWebpackPlugin({
       filename: "iframe.html",
-      template: "iframe.html",
+      template: "./src/html/iframe.html",
       inject: "body",
     }),
     new CopyWebpackPlugin([
       {
-        from: "selection-history.css",
+        from: "./src/css/selection-history.css",
         to: "selection-history.css"
+      },
+      {
+        from: "./src/html/index.html",
+        to: "index.html"
       }
     ])
   ],
   output: {
-    filename: "bundle.js",
-    path: path.resolve(__dirname, "dist"),
-    publicPath: "/dist/"
+    filename: "selection-history-bundle.js",
+    path: path.resolve(__dirname, "dist")
   },
   module: {
     rules: [

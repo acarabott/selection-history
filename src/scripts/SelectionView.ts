@@ -66,7 +66,8 @@ export class SelectionView {
     document.addEventListener("mousemove", evt => this.onMouseMove(evt), false);
     document.addEventListener("mouseup",   evt => this.onMouseUp(evt), false);
 
-    parentEl.addEventListener("touchstart", evt => this.onTouchStart(evt), false);
+    parentEl.addEventListener("touchstart", evt => this.onTouchStart(evt),
+                              { passive: true, capture: false });
     document.addEventListener("touchmove",  evt => this.onTouchMove(evt), false);
     document.addEventListener("touchend",   evt => this.onTouchEnd(evt), false);
 
