@@ -2,7 +2,6 @@ import { HistoryItem, SelectionCheck } from "./SelectionHistoryView";
 
 interface IButtonDef {
   name: string;
-  textContent: string;
   check: SelectionCheck;
 };
 
@@ -59,23 +58,22 @@ export class HistoryItemView {
     const buttonDefs: IButtonDef[] = [
       {
         name: "add",
-        textContent: "+",
         check: (inHistory, inCurrent) => inCurrent || inHistory
       },
       {
         name: "subtract",
-        textContent: "-",
         check: (inHistory, inCurrent) => inCurrent && !inHistory
       },
       {
-        name: "anti",
-        textContent: "A",
-        check: (inHistory, inCurrent) => (!inCurrent && inHistory) ||
-                                         (inCurrent && !inHistory)
+        name: "xor",
+        check: (inHistory, inCurrent) => Boolean(Number(inHistory) ^ Number(inCurrent))
+      },
+      {
+        name: "intersection",
+        check: (inHistory, inCurrent) => inCurrent && inHistory
       },
       {
         name: "inverse",
-        textContent: "I",
         check: (inHistory) => !inHistory
       },
     ];
@@ -84,7 +82,13 @@ export class HistoryItemView {
       const button = document.createElement("div");
       button.classList.add("button");
       button.classList.add(buttonDef.name);
-      button.textContent = buttonDef.textContent;
+
+      ["rect-a", "rect-b", "rect-c"].forEach(iconClass => {
+        const div = document.createElement("div");
+        div.classList.add("rect", iconClass);
+        button.appendChild(div);
+      });
+
       button.style.height = `${100 / array.length}%`;
       this.buttonsEl.appendChild(button);
       this.addButtonAction(button, buttonDef.check);

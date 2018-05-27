@@ -25,6 +25,7 @@ Array.from(Array(numTracks)).forEach((_, t) => {
 
   const track = document.createElement("div");
   track.classList.add("track");
+  if (t === numTracks - 1) { track.classList.add("last"); }
   track.style.height = `${trackHeightVH}vh`;
   container.appendChild(track);
 
@@ -89,7 +90,4 @@ document.body.addEventListener("touchmove", event => {
 }, { passive: false });
 
 
-
-// TODO touch support (shift key)
-// TODO button icons
-// TODO delete button?
+// TODO touch button size

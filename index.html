@@ -56,12 +56,17 @@
 
     .container, .selection-history {
       margin-top: 2.5vh;
+      border: 1px black solid;
     }
 
     .track {
       position: relative;
       width: 100%;
-      border: 1px black solid;
+      border-bottom: 1px black solid;
+    }
+
+    .track.last {
+      border-bottom: none;
     }
 
     .selectable {
@@ -111,13 +116,80 @@
     .history-item {
       display: block;
       position: relative;
-      border-bottom: 1px black solid;
+      border-bottom: 2px black solid;
       height: var(--history-height);
       width: var(--history-width);
     }
 
     .history-item .button {
       cursor: pointer;
+      position: relative;
+    }
+
+    .history-item .button .rect {
+      position: absolute;
+      border: 1px black solid;
+      width: 60%;
+      height: 40%;
+    }
+
+    .history-item .button .rect-a {
+      bottom: 1vh;
+      left: 1vh;
+    }
+
+    .history-item .button .rect-b {
+      top: 1vh;
+      right: 1vh;
+    }
+
+    .history-item .button .rect-c {
+      left: calc(1vh + 20% - 1px);
+      top: calc(1vh + 20% - 1px);
+      width: calc(40% + 1px);
+      height: calc(20% + 1px);
+    }
+
+    .history-item .button.add .rect-a { background: rgb(43, 156, 212); }
+    .history-item .button.add .rect-b { background: rgb(43, 156, 212); }
+    .history-item .button.add .rect-c { background: rgb(43, 156, 212); }
+
+    .history-item .button.subtract .rect-a { background: rgb(43, 156, 212); }
+    .history-item .button.subtract .rect-b { background: white; }
+    .history-item .button.subtract .rect-c { background: white; }
+
+    .history-item .button.xor .rect-a { background: rgb(43, 156, 212); }
+    .history-item .button.xor .rect-b { background: rgb(43, 156, 212); }
+    .history-item .button.xor .rect-c { background: white; }
+
+    .history-item .button.intersection .rect-a { background: white; }
+    .history-item .button.intersection .rect-b { background: white; }
+    .history-item .button.intersection .rect-c { background: rgb(43, 156, 212); }
+
+    .history-item .button.inverse .rect-a,
+    .history-item .button.inverse .rect-b {
+      width: 30%;
+      height: 60%;
+      top: 20%;
+    }
+
+    .history-item .button.inverse .rect-a {
+      background: rgb(43, 156, 212);
+      left: 0.5vw;
+    }
+
+    .history-item .button.inverse .rect-b {
+      background: white;
+      right: 0.5vw;
+    }
+
+    .history-item .button.inverse .rect-c {
+      background: black;
+      width: 1px;
+      height: 80%;
+      top: 10%;
+      left: 50%;
+      border: none;
     }
 
     .history-label {
@@ -179,7 +251,7 @@
     }
 
     .history-item .buttons .button:hover {
-      background: rgb(43, 156, 212);
+      background: rgba(43, 156, 212, 0.3);
       color: white;
     }
 
