@@ -40,24 +40,11 @@ html, body {
   width: var(--history-width);
 }
 
-h1 {
-  margin: 0;
-  padding: 0;
-  height: 11vh;
-  font-weight: 100;
-  display: flex;
-  align-items: flex-end;
-  display: none;
-}
-
 .container {
   position: relative;
   width: 60vw;
+  margin-left: 5vw;
   /*height: 60vh;*/ /* set in JS */
-}
-
-h1, .container {
-  margin-left: 2vw;
 }
 
 .container, .selection-history {

@@ -18,10 +18,6 @@ const container = document.createElement("div");
 container.classList.add("container");
 leftSide.appendChild(container);
 
-const title = document.createElement("h1");
-title.textContent = "Selection History";
-leftSide.appendChild(title);
-
 const numTracks = 4;
 const containerHeightVH = 69;
 container.style.height = `${containerHeightVH}vh`;
