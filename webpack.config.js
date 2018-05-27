@@ -1,10 +1,26 @@
 const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+
 
 module.exports = {
   resolve: {
     extensions: [".ts", ".js"]
   },
   entry: "./src/selection-history.ts",
+  plugins: [
+    new HtmlWebpackPlugin({
+      filename: "iframe.html",
+      template: "iframe.html",
+      inject: "body",
+    }),
+    new CopyWebpackPlugin([
+      {
+        from: "selection-history.css",
+        to: "selection-history.css"
+      }
+    ])
+  ],
   output: {
     filename: "bundle.js",
     path: path.resolve(__dirname, "dist"),
