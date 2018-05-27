@@ -96,6 +96,7 @@ export class HistoryItemView {
       const button = document.createElement("div");
       button.classList.add("button");
       button.classList.add(buttonDef.name);
+      button.setAttribute("title", buttonDef.name);
 
       this.previewStates.set(button, false);
 
