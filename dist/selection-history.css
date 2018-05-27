@@ -1,0 +1,277 @@
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: Helvetica, Arial, sans-serif;
+  overflow: hidden;
+  position: fixed;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  user-select: none;          /* Likely future */
+}
+
+#left, #right {
+  position: absolute;
+  height: 90vh;
+  overflow: hidden;
+  padding-top: 5vh;
+}
+
+#left {
+  left: 0;
+  width: 70vw;
+}
+
+:root {
+  --history-width: 28vw;
+  --label-top: calc(6.25vh);
+  --button-width: 5vw;
+  --preview-width: calc(var(--history-width) - var(--button-width));
+}
+
+#right {
+  left: 70vw;
+  width: var(--history-width);
+}
+
+.container {
+  position: relative;
+  width: 60vw;
+  margin-left: 5vw;
+  /*height: 60vh;*/ /* set in JS */
+}
+
+.container, .selection-history {
+  border: 1px black solid;
+}
+
+.track {
+  position: relative;
+  width: 100%;
+  border-bottom: 1px black solid;
+}
+
+.track.last {
+  border-bottom: none;
+}
+
+.selectable {
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: rgb(43, 156, 212);
+  border: 1px black solid;
+  opacity: 0.3;
+}
+
+.selectable,
+.isCombining .selectable:hover {
+  opacity: 0.3;
+}
+
+.selectable:hover {
+  opacity: 0.7;
+}
+
+.selectable.selected,
+.isCombining .selectable.selected {
+  opacity: 0.9;
+}
+
+.previewing .container .selectable {
+  opacity: 0.1;
+}
+
+.previewing .container .selectable.preview {
+  background: rgb(249, 182, 118);
+  opacity: 0.9;
+}
+
+.selection-history {
+  width: 100%;
+  height: 80vh;
+  border: 1px black solid;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.history-item {
+  display: block;
+  position: relative;
+  border-bottom: 2px black solid;
+  width: var(--history-width);
+}
+
+.history-item .button {
+  cursor: pointer;
+  position: relative;
+}
+
+:root {
+  --rect-width: 60%;
+  --rect-height: 45%;
+  --rect-margin-x: 10%;
+  --rect-margin-y: 15%;
+  --rect-overlap-x: calc((var(--rect-width) - 50%) + var(--rect-margin-x));
+  --rect-overlap-y: calc((var(--rect-height) - 50%) + var(--rect-margin-y));
+}
+
+.history-item .button .rect {
+  position: absolute;
+  border: 2px black solid;
+  width: var(--rect-width);
+  height: var(--rect-height);
+  z-index: 10;
+}
+
+.history-item .button .rect.active {
+  background: rgb(249, 182, 118);
+}
+
+.history-item .button .rect.inactive {
+  background: white;
+}
+
+.history-item .button .rect-a {
+  left: var(--rect-margin-x);
+  bottom: var(--rect-margin-y);
+}
+
+.history-item .button .rect-b {
+  left: calc(50% - var(--rect-overlap-x) + 1px);
+  top: calc(50% - var(--rect-overlap-y));
+  width: calc(var(--rect-overlap-x) * 2 - 1px);
+  height: calc(var(--rect-overlap-y) * 2);
+  z-index: 20;
+}
+
+.history-item .button .rect-c {
+  right: var(--rect-margin-x);
+  top: var(--rect-margin-y);
+}
+
+.history-item .button.inverse .rect-a,
+.history-item .button.inverse .rect-c {
+  width: 30%;
+  height: 60%;
+  top: 20%;
+}
+
+.history-item .button.inverse .rect-a {
+  left: 0.5vw;
+}
+
+.history-item .button.inverse .rect-c {
+  right: 0.5vw;
+}
+
+.history-item .button.inverse .rect-b {
+  background: black;
+  width: 1px;
+  height: 80%;
+  top: 10%;
+  left: 50%;
+  border: none;
+}
+
+.history-label {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 0.75vw;
+  top: 0;
+  height: 6.25vh;
+  z-index: 20;
+}
+
+.history-item .selectable {
+  opacity: 0.1;
+}
+
+.history-item .selectable.selected {
+  opacity: 0.6;
+  border: 1px black solid;
+}
+
+.history-item:hover .selectable.selected {
+  opacity: 0.9;
+}
+
+.history-item .preview-view {
+  position: relative;
+  display: inline-block;
+  border-right: 1px black solid;
+  height: 100%;
+  width: var(--preview-width);
+  z-index: 0;
+}
+
+.preview-view .selectable {
+  height: 5vh;
+}
+
+.history-item .buttons {
+  position: absolute;
+  width: var(--button-width);
+  height: 100%;
+  left: var(--preview-width);
+  top: 0;
+  border-left: 1px black solid;
+}
+
+.history-item .buttons .button {
+  /*height set in js*/
+  width: 100%;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px black solid;
+}
+
+.history-item .buttons .button:last-child {
+  border-bottom: none;
+}
+
+.history-item .buttons .button:hover {
+  background: rgba(249, 182, 118, 0.3);
+  color: white;
+}
+
+@keyframes slidein {
+  to {
+    margin-top: 0;
+  }
+}
+
+.history-item.first {
+  animation-name: slidein;
+  animation-duration: 0.25s; /* this is overwritten in JS */
+  animation-fill-mode: forwards;
+  animation-timing-function: ease-in-out;
+}
+
+.drag-selection {
+  transform-origin: top left;
+  will-change: transform;
+
+  width: 1px;
+  height: 1px;
+  position: absolute;
+  background: rgb(249, 182, 118);
+  opacity: 0.5;
+  display: none;
+  pointer-events: none;
+}
+
+.isDragSelecting .drag-selection {
+  display: block;
+}
