@@ -117,9 +117,8 @@ export class HistoryItemView {
                   useTouchPreview: boolean) {
     button.classList.add("button");
 
-    button.addEventListener("click", () => {
-      this.onAnyButtonClick(check);
-    }, false);
+    const onClick = () => this.onAnyButtonClick(check);
+    button.addEventListener("click", onClick, false);
 
     button.addEventListener("mouseenter", () => {
       this.onAnyButtonEnter(check);
@@ -130,8 +129,12 @@ export class HistoryItemView {
     }, false);
 
     if (useTouchPreview) {
-      button.addEventListener("touchstart", event => {
-        event.preventDefault();
+      let removed = false;
+      button.addEventListener("touchstart", () => {
+        if (!removed) {
+          button.removeEventListener("click", onClick, false);
+          removed = true;
+        }
 
         const allButtons = Array.from(this.previewStates.keys());
         const otherButtons = allButtons.filter(key => key !== button);
