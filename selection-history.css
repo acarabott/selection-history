@@ -133,28 +133,37 @@ h1, .container {
   position: relative;
 }
 
+:root {
+  --rect-width: 60%;
+  --rect-height: 45%;
+  --rect-margin-x: 10%;
+  --rect-margin-y: 15%;
+  --rect-overlap-x: calc((var(--rect-width) - 50%) + var(--rect-margin-x));
+  --rect-overlap-y: calc((var(--rect-height) - 50%) + var(--rect-margin-y));
+}
+
 .history-item .button .rect {
   position: absolute;
   border: 1px black solid;
-  width: 60%;
-  height: 40%;
+  width: var(--rect-width);
+  height: var(--rect-height);
 }
 
 .history-item .button .rect-a {
-  bottom: 1vh;
-  left: 1vh;
+  left: var(--rect-margin-x);
+  bottom: var(--rect-margin-y);
 }
 
 .history-item .button .rect-b {
-  top: 1vh;
-  right: 1vh;
+  right: var(--rect-margin-x);
+  top: var(--rect-margin-y);
 }
 
 .history-item .button .rect-c {
-  left: calc(1vh + 20% - 1px);
-  top: calc(1vh + 20% - 1px);
-  width: calc(40% + 1px);
-  height: calc(20% + 1px);
+  left: calc(50% - var(--rect-overlap-x));
+  top: calc(50% - var(--rect-overlap-y));
+  width: calc(calc(var(--rect-overlap-x) * 2));
+  height: calc(calc(var(--rect-overlap-y) * 2));
 }
 
 .history-item .button.add .rect-a { background: rgb(43, 156, 212); }
