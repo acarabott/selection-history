@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>iframe</title>
+  <title>Visual Selection History</title>
   <style>
     html, body {
       width: 100%;
@@ -11,17 +11,25 @@
       padding: 0;
     }
 
+    #copy {
+      border-bottom: 1px black solid;
+      width: 90vw;
+      padding: 0 5vw;
+    }
+
     h1 {
       font-weight: 100;
-      border-bottom: 1px black solid;
-      padding-left: 5vw;
-      padding-bottom: 5vh;
     }
 
   </style>
 </head>
 <body>
-  <h1>Selection History</h1>
+  <div id="copy">
+    <h1>Visual Selection History</h1>
+    <p>A UI experiment in visualsing the selection history, designed for UIs that require complex selections e.g. video editing, audio production, graphic design.</p>
+    <p>Eliminates the fear of losing your carefully selected set of elements.</p>
+    <p>Allows for treating selections as groups <em>without having to remember to create groups.</em></p>
+  </div>
   <iframe src="index.html" frameborder="0" width="100%", height="90%"></iframe>
 </body>
 </html>
