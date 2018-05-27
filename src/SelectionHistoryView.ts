@@ -76,7 +76,6 @@ export class SelectionHistoryView {
 
   render(historyItem: HistoryItem) {
     const animationDurationMs = 250;
-    const historyItemHeightVH = 34.5; // bad! hard coded from CSS
 
     const historyItemView = new HistoryItemView(historyItem);
     this.historyItemViews.push(historyItemView);
@@ -84,7 +83,7 @@ export class SelectionHistoryView {
 
     this.el.insertBefore(historyItemView.el,
                          this.el.childNodes[0]);
-    historyItemView.slideIn(historyItemHeightVH, animationDurationMs);
+    historyItemView.slideIn(animationDurationMs);
 
     const getSelection = (test: SelectionCheck): HistoryItem => {
       const currentStateEntries = Array.from(this.history[0].entries());

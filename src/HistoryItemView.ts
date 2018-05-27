@@ -154,10 +154,10 @@ export class HistoryItemView {
     this.labelEl.textContent = `${label}`;
   }
 
-  slideIn(historyItemHeightVH: number, animationDurationMs: number) {
-    this.el.style.marginTop = `${-historyItemHeightVH}vh`;
+  slideIn(animationDurationMs: number) {
+    this.el.style.marginTop = `-${this.el.style.height}`;
     this.el.classList.add("first");
     this.el.style.animationDuration = `${animationDurationMs}Ms`;
-    this.el.style.height = `${historyItemHeightVH}vh`;
+    this.el.style.height = this.el.style.height;
   }
 }
