@@ -147,6 +147,15 @@ h1, .container {
   border: 1px black solid;
   width: var(--rect-width);
   height: var(--rect-height);
+  z-index: 10;
+}
+
+.history-item .button .rect.active {
+  background: rgb(249, 182, 118);
+}
+
+.history-item .button .rect.inactive {
+  background: white;
 }
 
 .history-item .button .rect-a {
@@ -155,51 +164,34 @@ h1, .container {
 }
 
 .history-item .button .rect-b {
+  left: calc(50% - var(--rect-overlap-x) + 1px);
+  top: calc(50% - var(--rect-overlap-y));
+  width: calc(var(--rect-overlap-x) * 2 - 1px);
+  height: calc(var(--rect-overlap-y) * 2);
+  z-index: 20;
+}
+
+.history-item .button .rect-c {
   right: var(--rect-margin-x);
   top: var(--rect-margin-y);
 }
 
-.history-item .button .rect-c {
-  left: calc(50% - var(--rect-overlap-x));
-  top: calc(50% - var(--rect-overlap-y));
-  width: calc(calc(var(--rect-overlap-x) * 2));
-  height: calc(calc(var(--rect-overlap-y) * 2));
-}
-
-.history-item .button.add .rect-a { background: rgb(43, 156, 212); }
-.history-item .button.add .rect-b { background: rgb(43, 156, 212); }
-.history-item .button.add .rect-c { background: rgb(43, 156, 212); }
-
-.history-item .button.subtract .rect-a { background: rgb(43, 156, 212); }
-.history-item .button.subtract .rect-b { background: white; }
-.history-item .button.subtract .rect-c { background: white; }
-
-.history-item .button.xor .rect-a { background: rgb(43, 156, 212); }
-.history-item .button.xor .rect-b { background: rgb(43, 156, 212); }
-.history-item .button.xor .rect-c { background: white; }
-
-.history-item .button.intersection .rect-a { background: white; }
-.history-item .button.intersection .rect-b { background: white; }
-.history-item .button.intersection .rect-c { background: rgb(43, 156, 212); }
-
 .history-item .button.inverse .rect-a,
-.history-item .button.inverse .rect-b {
+.history-item .button.inverse .rect-c {
   width: 30%;
   height: 60%;
   top: 20%;
 }
 
 .history-item .button.inverse .rect-a {
-  background: rgb(43, 156, 212);
   left: 0.5vw;
 }
 
-.history-item .button.inverse .rect-b {
-  background: white;
+.history-item .button.inverse .rect-c {
   right: 0.5vw;
 }
 
-.history-item .button.inverse .rect-c {
+.history-item .button.inverse .rect-b {
   background: black;
   width: 1px;
   height: 80%;

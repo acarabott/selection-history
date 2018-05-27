@@ -1,7 +1,11 @@
 import { HistoryItem, SelectionCheck } from "./SelectionHistoryView";
 
+type ButtonRectKeys = "a" | "b" | "c";
+type ButtonRectStates = "active" | "inactive";
+
 interface IButtonDef {
   name: string;
+  states: { [K in ButtonRectKeys]: ButtonRectStates },
   check: SelectionCheck;
 };
 
@@ -31,6 +35,7 @@ export class HistoryItemView {
 
     this.el = document.createElement("div");
     this.el.classList.add("history-item");
+    this.el.style.height = "34.5vh";
 
     this._label = 1;
     this.labelEl = document.createElement("div");
@@ -62,22 +67,27 @@ export class HistoryItemView {
     const buttonDefs: IButtonDef[] = [
       {
         name: "add",
+        states: { a: "active", b: "active", c: "active", },
         check: (inHistory, inCurrent) => inCurrent || inHistory
       },
       {
         name: "subtract",
+        states: { a: "active", b: "inactive", c: "inactive", },
         check: (inHistory, inCurrent) => inCurrent && !inHistory
       },
       {
         name: "xor",
+        states: { a: "active", b: "inactive", c: "active", },
         check: (inHistory, inCurrent) => Boolean(Number(inHistory) ^ Number(inCurrent))
       },
       {
         name: "intersection",
+        states: { a: "inactive", b: "active", c: "inactive", },
         check: (inHistory, inCurrent) => inCurrent && inHistory
       },
       {
         name: "inverse",
+        states: { a: "active", b: "inactive", c: "inactive", },
         check: (inHistory) => !inHistory
       },
     ];
@@ -89,9 +99,10 @@ export class HistoryItemView {
 
       this.previewStates.set(button, false);
 
-      ["rect-a", "rect-b", "rect-c"].forEach(iconClass => {
+      (<ButtonRectKeys[]>["a", "b", "c"]).forEach(key => {
+        const iconClass = `rect-${key}`;
         const div = document.createElement("div");
-        div.classList.add("rect", iconClass);
+        div.classList.add("rect", iconClass, buttonDef.states[key]);
         button.appendChild(div);
       });
 
