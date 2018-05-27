@@ -20,6 +20,8 @@ export class HistoryItemView {
   protected previewEl: HTMLElement;
   protected buttonsEl: HTMLElement;
 
+  protected previewStates: Map<HTMLElement, boolean>;
+
   constructor(historyItem: HistoryItem) {
     this.historyItem = historyItem;
 
@@ -38,11 +40,13 @@ export class HistoryItemView {
     this.previewEl = document.createElement("div");
     this.previewEl.classList.add("preview-view");
     this.el.appendChild(this.previewEl);
-    this.addButtonAction(this.previewEl, (inHistory) => inHistory);
+    this.addButtonAction(this.previewEl, (inHistory) => inHistory, false);
 
     this.buttonsEl = document.createElement("div");
     this.buttonsEl.classList.add("buttons");
     this.el.appendChild(this.buttonsEl);
+
+    this.previewStates = new Map<HTMLElement, boolean>();
 
     this.historyItem.forEach((selected, view) => {
       const clone = view.cloneEl();
@@ -83,6 +87,8 @@ export class HistoryItemView {
       button.classList.add("button");
       button.classList.add(buttonDef.name);
 
+      this.previewStates.set(button, false);
+
       ["rect-a", "rect-b", "rect-c"].forEach(iconClass => {
         const div = document.createElement("div");
         div.classList.add("rect", iconClass);
@@ -91,11 +97,12 @@ export class HistoryItemView {
 
       button.style.height = `${100 / array.length}%`;
       this.buttonsEl.appendChild(button);
-      this.addButtonAction(button, buttonDef.check);
+      this.addButtonAction(button, buttonDef.check, true);
     });
   }
 
-  addButtonAction(button: HTMLElement, check: SelectionCheck) {
+  addButtonAction(button: HTMLElement, check: SelectionCheck,
+                  useTouchPreview: boolean) {
     button.classList.add("button");
 
     button.addEventListener("click", () => {
@@ -109,6 +116,24 @@ export class HistoryItemView {
     button.addEventListener("mouseleave", () => {
       this.onAnyButtonLeave();
     }, false);
+
+    if (useTouchPreview) {
+      button.addEventListener("touchstart", event => {
+        event.preventDefault();
+
+        const allButtons = Array.from(this.previewStates.keys());
+        const otherButtons = allButtons.filter(key => key !== button);
+        otherButtons.forEach(key => this.previewStates.set(key, false));
+
+        const isPreviewing = this.previewStates.get(button)!;
+
+        isPreviewing
+          ? this.onAnyButtonClick(check)
+          : this.onAnyButtonEnter(check);
+
+        this.previewStates.set(button, !isPreviewing);
+      }, false);
+    }
   };
 
 

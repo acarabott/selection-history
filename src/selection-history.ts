@@ -93,6 +93,3 @@ selectionHistory.el.addEventListener("touchend", () => {
 document.body.addEventListener("touchmove", event => {
   event.preventDefault();
 }, { passive: false });
-
-
-// TODO touch button size

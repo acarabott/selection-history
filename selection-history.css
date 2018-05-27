@@ -104,8 +104,8 @@ h1, .container {
   opacity: 0.1;
 }
 
-.previewing .selectable.preview {
-  background: rgb(43, 156, 212);
+.previewing .container .selectable.preview {
+  background: rgb(249, 182, 118);
   opacity: 0.9;
 }
 
@@ -257,7 +257,7 @@ h1, .container {
 }
 
 .history-item .buttons .button:hover {
-  background: rgba(43, 156, 212, 0.3);
+  background: rgba(249, 182, 118, 0.3);
   color: white;
 }
 
