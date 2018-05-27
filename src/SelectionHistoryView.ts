@@ -76,7 +76,7 @@ export class SelectionHistoryView {
 
   render(historyItem: HistoryItem) {
     const animationDurationMs = 250;
-    const historyItemHeightVH = 25; // bad! hard coded from CSS
+    const historyItemHeightVH = 34.5; // bad! hard coded from CSS
 
     const historyItemView = new HistoryItemView(historyItem);
     this.historyItemViews.push(historyItemView);
